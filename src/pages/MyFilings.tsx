@@ -149,10 +149,11 @@ const MyFilings: React.FC = () => {
                           onChange={(e) => setStatusFilter(e.target.value)}
                           className="pl-3 pr-8 py-1 bg-white border border-gray-200 rounded text-[10px] font-bold text-gray-700 outline-none appearance-none cursor-pointer"
                         >
-                          <option value="All">Status</option>
-                          <option value="Filed">Filed</option>
+                          <option value="All">Filing Status</option>
                           <option value="Draft">Draft</option>
                           <option value="Submitted">Submitted</option>
+                          <option value="Filed">Filed</option>
+                          <option value="Overdue">Overdue</option>
                         </select>
                         <ChevronDown size={10} className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
                       </div>
@@ -197,8 +198,8 @@ const MyFilings: React.FC = () => {
                           <td colSpan={11} className="py-8 text-center text-gray-400 font-bold uppercase">No data</td>
                         </tr>
                       ) : filteredFilings.map((row) => {
-                        // Determine if due date is in the future for color coding
-                        const isFuture = row.status === 'Draft'; // Simple heuristic based on screenshot
+                        const isDraft = row.status === 'Draft';
+                        const isOverdue = row.status === 'Overdue';
                         
                         return (
                           <tr key={row.id} className="hover:bg-gray-50 relative">
@@ -206,7 +207,7 @@ const MyFilings: React.FC = () => {
                             <td className="px-4 py-3 font-bold text-gray-700">{row.vatRef}</td>
                             <td className="px-4 py-3 text-gray-700">{row.periodFrom}</td>
                             <td className="px-4 py-3 text-gray-700">{row.periodTo}</td>
-                            <td className={cn("px-4 py-3 font-bold", isFuture ? "text-green-600" : "text-red-500")}>
+                            <td className={cn("px-4 py-3 font-bold", isOverdue ? "text-red-500" : isDraft ? "text-green-600" : "text-gray-700")}>
                               {row.dueDate}
                             </td>
                             <td className="px-4 py-3 text-gray-700">{row.taxYearEnd}</td>
@@ -215,8 +216,11 @@ const MyFilings: React.FC = () => {
                             <td className="px-4 py-3 text-gray-700">{row.exemptionStatus}</td>
                             <td className="px-4 py-3">
                               <div className="flex items-center gap-1.5">
-                                <div className={cn("w-1.5 h-1.5 rounded-full", row.status === 'Draft' ? 'bg-gray-400' : 'bg-blue-600')} />
-                                <span className="font-bold text-gray-700">{row.status}</span>
+                                <div className={cn(
+                                  "w-1.5 h-1.5 rounded-full", 
+                                  isDraft ? 'bg-gray-400' : isOverdue ? 'bg-red-500' : 'bg-blue-600'
+                                )} />
+                                <span className={cn("font-bold", isOverdue ? "text-red-500" : "text-gray-700")}>{row.status}</span>
                               </div>
                             </td>
                             <td className="px-4 py-3 text-center relative">

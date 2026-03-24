@@ -1,4 +1,4 @@
-import { VATReturn, CorporateTaxReturn, Correspondence, Payment, Registration } from '../types';
+import { VATReturn, CorporateTaxReturn, Correspondence, Payment, Registration, Document } from '../types';
 
 export const dataService = {
   async getVATReturns(): Promise<VATReturn[]> {
@@ -77,5 +77,41 @@ export const dataService = {
     const response = await fetch('/api/registrations');
     if (!response.ok) return [];
     return response.json();
+  },
+
+  async getDocuments(): Promise<Document[]> {
+    const response = await fetch('/api/documents');
+    if (!response.ok) return [];
+    return response.json();
+  },
+
+  async getDocumentsByVATReturn(vatReturnId: string): Promise<Document[]> {
+    const response = await fetch(`/api/documents/${vatReturnId}`);
+    if (!response.ok) return [];
+    return response.json();
+  },
+
+  async uploadDocument(data: { vatReturnId: string, fileName: string, fileType: string, fileData: string }) {
+    const response = await fetch('/api/documents/upload', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data)
+    });
+    if (!response.ok) throw new Error('Failed to upload document');
+    return response.json();
+  },
+
+  async downloadDocument(id: string) {
+    const response = await fetch(`/api/documents/download/${id}`);
+    if (!response.ok) throw new Error('Failed to download document');
+    const doc = await response.json();
+    
+    // Create a link and trigger download
+    const link = document.createElement('a');
+    link.href = doc.fileData;
+    link.download = doc.fileName;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
   }
 };

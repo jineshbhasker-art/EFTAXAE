@@ -97,6 +97,18 @@ db.exec(`
     createdAt TEXT,
     FOREIGN KEY(userId) REFERENCES users(id)
   );
+
+  CREATE TABLE IF NOT EXISTS documents (
+    id TEXT PRIMARY KEY,
+    userId TEXT,
+    vatReturnId TEXT,
+    fileName TEXT,
+    fileType TEXT,
+    fileData TEXT,
+    createdAt TEXT,
+    FOREIGN KEY(userId) REFERENCES users(id),
+    FOREIGN KEY(vatReturnId) REFERENCES vat_returns(id)
+  );
 `);
 
 // Seed Database
@@ -134,7 +146,7 @@ async function seedDatabase() {
     }
 
     // Create VAT Returns
-    const createVatFormData = (period: string, periodFrom: string, periodTo: string, taxYearEnd: string, totalSales: number, totalVAT: number, totalExpenses: number, totalRecoverableVAT: number, dueDate: string, vatRef: string, goodsImportedAmount: number = 0, goodsImportedVat: number = 0) => ({
+    const createVatFormData = (period: string, periodFrom: string, periodTo: string, taxYearEnd: string, totalSales: number, totalVAT: number, totalExpenses: number, totalRecoverableVAT: number, dueDate: string, vatRef: string, goodsImportedAmount: number = 0, goodsImportedVat: number = 0, dubaiSalesAmount: number = 0, dubaiSalesVat: number = 0, stdExpensesAmount: number = 0, stdExpensesVat: number = 0) => ({
       vatRef,
       period,
       periodFrom,
@@ -145,8 +157,8 @@ async function seedDatabase() {
       stagger: 'Stagger 2 - Quarterly (Mar to Feb)',
       sales: {
         standardRated: {
-          abuDhabi: { amount: totalSales, vat: totalVAT, adjustment: 0 },
-          dubai: { amount: 0, vat: 0, adjustment: 0 },
+          abuDhabi: { amount: 0, vat: 0, adjustment: 0 },
+          dubai: { amount: dubaiSalesAmount, vat: dubaiSalesVat, adjustment: 0 },
           sharjah: { amount: 0, vat: 0, adjustment: 0 },
           ajman: { amount: 0, vat: 0, adjustment: 0 },
           ummAlQuwain: { amount: 0, vat: 0, adjustment: 0 },
@@ -161,10 +173,10 @@ async function seedDatabase() {
         adjustmentsImports: { amount: 0, vat: 0 },
       },
       expenses: {
-        standardRated: { amount: totalExpenses, vat: totalRecoverableVAT, adjustment: 0 },
-        reverseCharge: { amount: 0, vat: 0, adjustment: 0 },
+        standardRated: { amount: stdExpensesAmount, vat: stdExpensesVat, adjustment: 0 },
+        reverseCharge: { amount: goodsImportedAmount, vat: goodsImportedVat, adjustment: 0 },
       },
-      refundRequest: 'No',
+      refundRequest: 'Yes',
       profitMarginScheme: 'No'
     });
 
@@ -172,20 +184,37 @@ async function seedDatabase() {
       { 
         id: `vat-img-1-${userId}`, 
         userId, 
-        status: 'Draft', 
+        status: 'Submitted', 
         period: '01/12/2025 - 28/02/2026', 
-        vatRef: '100234567890003',
+        vatRef: '230010165962',
         periodFrom: '01/12/2025',
         periodTo: '28/02/2026',
         taxYearEnd: '28/02/2026',
-        totalSales: 519580.13, 
-        totalVAT: 25979.01, 
-        totalExpenses: 0, 
-        totalRecoverableVAT: 0, 
-        netVAT: 25979.01, 
+        totalSales: 3121416.78, 
+        totalVAT: 156070.84, 
+        totalExpenses: 2558941.13, 
+        totalRecoverableVAT: 127947.06, 
+        netVAT: 28123.78, 
         dueDate: '30/03/2026', 
-        filedAt: null, 
-        formData: createVatFormData('01/12/2025 - 28/02/2026', '01/12/2025', '28/02/2026', '28/02/2026', 0, 0, 0, 0, '30/03/2026', '100234567890003', 519580.13, 25979.01)
+        filedAt: '2026-03-23T19:40:03Z', 
+        formData: createVatFormData(
+          '01/12/2025 - 28/02/2026', 
+          '01/12/2025', 
+          '28/02/2026', 
+          '28/02/2026', 
+          3121416.78, 
+          156070.84, 
+          2558941.13, 
+          127947.06, 
+          '30/03/2026', 
+          '230010165962', 
+          519580.13, 
+          25979.01,
+          2601836.65,
+          130091.83,
+          2039361.00,
+          101968.05
+        )
       },
       { 
         id: `vat-img-2-${userId}`, 
@@ -200,7 +229,7 @@ async function seedDatabase() {
         totalVAT: 0, 
         totalExpenses: 445976.20, 
         totalRecoverableVAT: 22298.81, 
-        netVAT: -22298.81, 
+        netVAT: 22298.81, 
         dueDate: '29/12/2025', 
         filedAt: '2025-12-25T10:00:00Z', 
         formData: createVatFormData('01/09/2025 - 30/11/2025', '01/09/2025', '30/11/2025', '28/02/2026', 0, 0, 445976.20, 22298.81, '29/12/2025', '230009650203')
@@ -218,7 +247,7 @@ async function seedDatabase() {
         totalVAT: 0, 
         totalExpenses: 123245.60, 
         totalRecoverableVAT: 6162.28, 
-        netVAT: -6162.28, 
+        netVAT: 6162.28, 
         dueDate: '29/09/2025', 
         filedAt: '2025-09-26T10:00:00Z', 
         formData: createVatFormData('01/06/2025 - 31/08/2025', '01/06/2025', '31/08/2025', '28/02/2026', 0, 0, 123245.60, 6162.28, '29/09/2025', '230009007872')
@@ -524,6 +553,43 @@ async function startServer() {
   app.get('/api/registrations', authenticateToken, (req: any, res) => {
     const registrations = db.prepare('SELECT * FROM registrations WHERE userId = ? ORDER BY createdAt DESC').all(req.user.id);
     res.json(registrations);
+  });
+
+  // Document Routes
+  app.get('/api/documents', authenticateToken, (req: any, res) => {
+    const docs = db.prepare(`
+      SELECT d.id, d.userId, d.vatReturnId, d.fileName, d.fileType, d.createdAt, v.vatRef 
+      FROM documents d
+      JOIN vat_returns v ON d.vatReturnId = v.id
+      WHERE d.userId = ? 
+      ORDER BY d.createdAt DESC
+    `).all(req.user.id);
+    res.json(docs);
+  });
+
+  app.get('/api/documents/:vatReturnId', authenticateToken, (req: any, res) => {
+    const docs = db.prepare('SELECT id, userId, vatReturnId, fileName, fileType, createdAt FROM documents WHERE userId = ? AND vatReturnId = ?').all(req.user.id, req.params.vatReturnId);
+    res.json(docs);
+  });
+
+  app.get('/api/documents/download/:id', authenticateToken, (req: any, res) => {
+    const doc = db.prepare('SELECT * FROM documents WHERE id = ? AND userId = ?').get(req.params.id, req.user.id) as any;
+    if (!doc) return res.sendStatus(404);
+    res.json(doc);
+  });
+
+  app.post('/api/documents/upload', authenticateToken, (req: any, res) => {
+    const id = Math.random().toString(36).substr(2, 9);
+    const { vatReturnId, fileName, fileType, fileData } = req.body;
+    const now = new Date().toISOString();
+    
+    const stmt = db.prepare(`
+      INSERT INTO documents (id, userId, vatReturnId, fileName, fileType, fileData, createdAt)
+      VALUES (?, ?, ?, ?, ?, ?, ?)
+    `);
+    
+    stmt.run(id, req.user.id, vatReturnId, fileName, fileType, fileData, now);
+    res.status(201).json({ id });
   });
 
   // Vite middleware for development

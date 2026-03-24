@@ -44,6 +44,8 @@ const VATRefund: React.FC = () => {
         <ChevronRight size={10} />
         <span className="cursor-pointer hover:text-[#B8860B]" onClick={() => navigate('/vat')}>VAT</span>
         <ChevronRight size={10} />
+        <span className="cursor-pointer hover:text-[#B8860B]" onClick={() => navigate('/vat/services')}>VAT Services</span>
+        <ChevronRight size={10} />
         <span className="text-[#B8860B]">VAT Refund</span>
       </div>
 

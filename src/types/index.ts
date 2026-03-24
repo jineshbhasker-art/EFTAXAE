@@ -25,11 +25,25 @@ export interface VATReturn {
   period: string;
   dueDate: string;
   status: 'Filed' | 'Draft' | 'Overdue' | 'Submitted';
+  vatRef?: string;
   totalSales: number;
   totalVAT: number;
+  totalExpenses: number;
+  totalRecoverableVAT: number;
   netVAT: number;
   filedAt?: string;
   formData?: any;
+}
+
+export interface Document {
+  id: string;
+  userId: string;
+  vatReturnId: string;
+  fileName: string;
+  fileType: string;
+  fileData?: string;
+  createdAt: string;
+  vatRef?: string;
 }
 
 export interface CorporateTaxReturn {

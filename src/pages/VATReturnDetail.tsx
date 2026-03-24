@@ -22,8 +22,7 @@ import {
   ChevronRight,
   FileDown
 } from 'lucide-react';
-import jsPDF from 'jspdf';
-import autoTable from 'jspdf-autotable';
+import { generateVAT201PDF } from '../lib/pdfGenerator';
 
 const VATReturnDetail: React.FC = () => {
   const { id } = useParams();
@@ -32,6 +31,7 @@ const VATReturnDetail: React.FC = () => {
   const [activeTab, setActiveTab] = useState('Sales');
   const [loading, setLoading] = useState(true);
   const [returnDetails, setReturnDetails] = useState<any>(null);
+  const [documents, setDocuments] = useState<any[]>([]);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -41,6 +41,9 @@ const VATReturnDetail: React.FC = () => {
         const data = await dataService.getVATReturn(id);
         if (data) {
           setReturnDetails(data);
+          // Fetch documents for this return
+          const docs = await dataService.getDocumentsByVATReturn(id);
+          setDocuments(docs);
         }
       } catch (error) {
         console.error("Error fetching VAT return:", error);
@@ -54,56 +57,15 @@ const VATReturnDetail: React.FC = () => {
 
   const handleDownloadPDF = () => {
     if (!returnDetails) return;
-    
-    const doc = new jsPDF();
-    
-    // Header
-    doc.setFontSize(20);
-    doc.setTextColor(10, 25, 47); // #0A192F
-    doc.text('VAT 201 - VAT Return Details', 14, 22);
-    
-    doc.setFontSize(10);
-    doc.setTextColor(100);
-    doc.text(`Generated on: ${new Date().toLocaleString()}`, 14, 30);
-    
-    // Company Info (Mock)
-    doc.setFontSize(12);
-    doc.setTextColor(0);
-    doc.text('Taxable Person: MOHAMMAD SHAFIULALAM VEGETABLES AND FRUITS TRADING L.L.C', 14, 45);
-    doc.text(`TRN: ${returnDetails.vatRef || '100234567890003'}`, 14, 52);
-    doc.text(`Tax Period: ${returnDetails.period}`, 14, 59);
-    doc.text(`Status: ${returnDetails.status}`, 14, 66);
-    
-    // Summary Table
-    autoTable(doc, {
-      startY: 75,
-      head: [['Description', 'Amount (AED)']],
-      body: [
-        ['Total Sales', (returnDetails.totalSales || 0).toLocaleString()],
-        ['Total VAT on Sales', (returnDetails.totalVAT || 0).toLocaleString()],
-        ['Total Expenses', (returnDetails.totalExpenses || 0).toLocaleString()],
-        ['Total Recoverable VAT', (returnDetails.totalRecoverableVAT || 0).toLocaleString()],
-        ['Net VAT Payable', (returnDetails.netVAT || 0).toLocaleString()],
-      ],
-      theme: 'striped',
-      headStyles: { fillColor: [184, 134, 11] } // #B8860B
-    });
-    
-    // Footer
-    const pageCount = (doc as any).internal.getNumberOfPages();
-    for (let i = 1; i <= pageCount; i++) {
-      doc.setPage(i);
-      doc.setFontSize(8);
-      doc.setTextColor(150);
-      doc.text(
-        `Federal Tax Authority - UAE VAT Return | Page ${i} of ${pageCount}`,
-        doc.internal.pageSize.getWidth() / 2,
-        doc.internal.pageSize.getHeight() - 10,
-        { align: 'center' }
-      );
+    generateVAT201PDF(returnDetails);
+  };
+
+  const handleDownloadDocument = async (docId: string) => {
+    try {
+      await dataService.downloadDocument(docId);
+    } catch (error) {
+      console.error("Error downloading document:", error);
     }
-    
-    doc.save(`VAT_Return_${returnDetails.period.replace(/\s+/g, '_')}.pdf`);
   };
 
   if (loading) return <div className="flex items-center justify-center h-screen">Loading Return Details...</div>;
@@ -113,7 +75,8 @@ const VATReturnDetail: React.FC = () => {
     { id: 'Sales', title: 'VAT on Sales/Outputs' },
     { id: 'Expenses', title: 'VAT on Expenses/Inputs' },
     { id: 'NetDue', title: 'Net VAT Due' },
-    { id: 'Declaration', title: 'Review & Declaration' }
+    { id: 'Declaration', title: 'Review & Declaration' },
+    { id: 'Documents', title: 'Linked Documents' }
   ];
 
   return (
@@ -380,6 +343,49 @@ const VATReturnDetail: React.FC = () => {
                     </div>
                   </div>
                 </div>
+              </div>
+            )}
+
+            {activeTab === 'Documents' && (
+              <div className="space-y-6">
+                <div className="bg-blue-50 p-3 rounded border border-blue-100 flex gap-3 text-blue-800 text-[11px]">
+                  <Info size={16} className="shrink-0" />
+                  <p>Documents uploaded and linked to this specific VAT return filing.</p>
+                </div>
+
+                {documents.length > 0 ? (
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    {documents.map((doc) => (
+                      <div key={doc.id} className="p-4 border border-gray-200 rounded-lg hover:border-[#B8860B] transition-all group bg-white shadow-sm">
+                        <div className="flex items-start justify-between mb-3">
+                          <div className="p-2 bg-gray-50 rounded group-hover:bg-[#B8860B]/10 transition-colors">
+                            <FileText size={24} className="text-gray-400 group-hover:text-[#B8860B]" />
+                          </div>
+                          <button 
+                            onClick={() => handleDownloadDocument(doc.id)}
+                            className="p-2 text-gray-400 hover:text-[#B8860B] hover:bg-gray-50 rounded-full transition-all"
+                            title="Download Document"
+                          >
+                            <Download size={18} />
+                          </button>
+                        </div>
+                        <h4 className="text-[11px] font-bold text-[#0A192F] truncate mb-1" title={doc.fileName}>
+                          {doc.fileName}
+                        </h4>
+                        <div className="flex items-center justify-between text-[9px] text-gray-500 font-bold uppercase tracking-wider">
+                          <span>{doc.fileType.split('/')[1] || 'FILE'}</span>
+                          <span>{new Date(doc.createdAt).toLocaleDateString()}</span>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="text-center py-12 bg-gray-50 rounded-lg border-2 border-dashed border-gray-200">
+                    <FileText size={48} className="mx-auto text-gray-300 mb-4" />
+                    <h3 className="text-sm font-bold text-gray-400 uppercase">No documents found</h3>
+                    <p className="text-[10px] text-gray-400 mt-1">Upload documents in the VAT Services section to link them to this return.</p>
+                  </div>
+                )}
               </div>
             )}
           </div>

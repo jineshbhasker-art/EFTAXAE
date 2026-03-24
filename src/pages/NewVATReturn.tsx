@@ -25,6 +25,7 @@ import {
   ArrowRight,
   ArrowLeft
 } from 'lucide-react';
+import { generateVAT201PDF } from '../lib/pdfGenerator';
 import { motion, AnimatePresence } from 'motion/react';
 import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
@@ -43,9 +44,9 @@ const NewVATReturn: React.FC = () => {
   const [editId, setEditId] = useState<string | null>(null);
 
   const [formData, setFormData] = useState({
-    vatRef: '',
-    periodFrom: '',
-    periodTo: '',
+    vatRef: '100354945600003',
+    periodFrom: '2025-12-01',
+    periodTo: '2026-02-28',
     status: 'Draft' as 'Draft' | 'Submitted',
     period: '01/12/2025 - 28/02/2026',
     stagger: 'Stagger 2 - Quarterly (Mar to Feb)',
@@ -54,7 +55,7 @@ const NewVATReturn: React.FC = () => {
     sales: {
       standardRated: {
         abuDhabi: { amount: 0, vat: 0, adjustment: 0 },
-        dubai: { amount: 0, vat: 0, adjustment: 0 },
+        dubai: { amount: 2601836.65, vat: 130091.83, adjustment: 0 },
         sharjah: { amount: 0, vat: 0, adjustment: 0 },
         ajman: { amount: 0, vat: 0, adjustment: 0 },
         ummAlQuwain: { amount: 0, vat: 0, adjustment: 0 },
@@ -69,10 +70,10 @@ const NewVATReturn: React.FC = () => {
       adjustmentsImports: { amount: 0, vat: 0 },
     },
     expenses: {
-      standardRated: { amount: 0, vat: 0, adjustment: 0 },
-      reverseCharge: { amount: 0, vat: 0, adjustment: 0 },
+      standardRated: { amount: 2039361.00, vat: 101968.05, adjustment: 0 },
+      reverseCharge: { amount: 519580.13, vat: 25979.01, adjustment: 0 },
     },
-    refundRequest: 'No' as 'Yes' | 'No',
+    refundRequest: 'Yes' as 'Yes' | 'No',
     profitMarginScheme: 'No'
   });
 
@@ -158,6 +159,10 @@ const NewVATReturn: React.FC = () => {
       };
 
       await dataService.saveVATReturn(payload);
+
+      if (status === 'Submitted') {
+        generateVAT201PDF(payload as any);
+      }
 
       showToast(status === 'Submitted' ? 'VAT return submitted successfully' : 'VAT return saved as draft', 'success');
       navigate('/vat/my-filings');
