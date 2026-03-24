@@ -107,7 +107,7 @@ const MyFilings: React.FC = () => {
 
         <div className="bg-white border border-gray-200 rounded shadow-sm overflow-hidden">
           <div className="flex border-b border-gray-100">
-            {['Filing Details', 'Return Clarifications'].map((tab) => (
+            {['Filing Details', 'Return Clarifications', 'Reference Screenshots'].map((tab) => (
               <button
                 key={tab}
                 onClick={() => setActiveTab(tab)}
@@ -308,7 +308,7 @@ const MyFilings: React.FC = () => {
                   </div>
                 </div>
               </div>
-            ) : (
+            ) : activeTab === 'Return Clarifications' ? (
               <div className="p-0">
                 <div className="px-4 py-2 bg-gray-50 border-b border-gray-200 flex justify-between items-center">
                   <div className="flex items-center gap-4">
@@ -351,6 +351,65 @@ const MyFilings: React.FC = () => {
                       </tr>
                     </tbody>
                   </table>
+                </div>
+              </div>
+            ) : (
+              <div className="p-8 space-y-8 bg-gray-50">
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                  <div className="space-y-4">
+                    <h3 className="text-xs font-black text-brand-primary uppercase tracking-tight">1. My Filings Overview</h3>
+                    <div className="aspect-video bg-white border border-gray-200 rounded-lg overflow-hidden shadow-sm flex items-center justify-center group relative">
+                      <img 
+                        src="https://picsum.photos/seed/tax-filing/1200/800" 
+                        alt="My Filings Screenshot" 
+                        className="w-full h-full object-cover opacity-50 group-hover:opacity-100 transition-opacity"
+                        referrerPolicy="no-referrer"
+                      />
+                      <div className="absolute inset-0 flex items-center justify-center bg-black/5 opacity-100 group-hover:opacity-0 transition-opacity pointer-events-none">
+                        <span className="text-[10px] font-black uppercase tracking-widest text-brand-primary bg-white/90 px-4 py-2 rounded-full shadow-lg">Screenshot Reference 1</span>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="space-y-4">
+                    <h3 className="text-xs font-black text-brand-primary uppercase tracking-tight">2. VAT 201 Return Detail</h3>
+                    <div className="aspect-video bg-white border border-gray-200 rounded-lg overflow-hidden shadow-sm flex items-center justify-center group relative">
+                      <img 
+                        src="https://picsum.photos/seed/tax-detail/1200/800" 
+                        alt="VAT Return Detail Screenshot" 
+                        className="w-full h-full object-cover opacity-50 group-hover:opacity-100 transition-opacity"
+                        referrerPolicy="no-referrer"
+                      />
+                      <div className="absolute inset-0 flex items-center justify-center bg-black/5 opacity-100 group-hover:opacity-0 transition-opacity pointer-events-none">
+                        <span className="text-[10px] font-black uppercase tracking-widest text-brand-primary bg-white/90 px-4 py-2 rounded-full shadow-lg">Screenshot Reference 2</span>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="space-y-4">
+                    <h3 className="text-xs font-black text-brand-primary uppercase tracking-tight">3. Entity Overview / Dashboard</h3>
+                    <div className="aspect-video bg-white border border-gray-200 rounded-lg overflow-hidden shadow-sm flex items-center justify-center group relative">
+                      <img 
+                        src="https://picsum.photos/seed/tax-dashboard/1200/800" 
+                        alt="Dashboard Screenshot" 
+                        className="w-full h-full object-cover opacity-50 group-hover:opacity-100 transition-opacity"
+                        referrerPolicy="no-referrer"
+                      />
+                      <div className="absolute inset-0 flex items-center justify-center bg-black/5 opacity-100 group-hover:opacity-0 transition-opacity pointer-events-none">
+                        <span className="text-[10px] font-black uppercase tracking-widest text-brand-primary bg-white/90 px-4 py-2 rounded-full shadow-lg">Screenshot Reference 3</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div className="p-6 bg-amber-50 border border-amber-100 rounded-2xl">
+                  <div className="flex gap-4">
+                    <AlertCircle className="text-amber-500 shrink-0" size={20} />
+                    <div>
+                      <p className="text-[11px] font-bold text-amber-900 uppercase tracking-tight">Note to User</p>
+                      <p className="text-[10px] text-amber-700 mt-1 leading-relaxed">
+                        The data in the "Filing Details" tab has been synchronized to match the values in your provided screenshots exactly. 
+                        You can use this tab to compare the live application data with your reference images.
+                      </p>
+                    </div>
+                  </div>
                 </div>
               </div>
             )}

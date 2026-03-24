@@ -169,21 +169,39 @@ const VATReturnDetail: React.FC = () => {
                   </thead>
                   <tbody className="divide-y divide-gray-50">
                     {[
-                      { label: 'Standard rated supplies in Abu Dhabi', amount: returnDetails.totalSales || 0, vat: (returnDetails.totalSales || 0) * 0.05 },
-                      { label: 'Standard rated supplies in Dubai', amount: 0, vat: 0 },
-                      { label: 'Standard rated supplies in Sharjah', amount: 0, vat: 0 },
-                      { label: 'Supplies subject to the reverse charge provisions', amount: 0, vat: 0 },
-                      { label: 'Zero rated supplies', amount: 0, vat: 0 },
-                      { label: 'Exempt supplies', amount: 0, vat: 0 }
+                      { id: '1a', label: 'Standard rated supplies in Abu Dhabi', amount: returnDetails.formData?.sales?.standardRated?.abuDhabi?.amount || 0, vat: returnDetails.formData?.sales?.standardRated?.abuDhabi?.vat || 0, adj: returnDetails.formData?.sales?.standardRated?.abuDhabi?.adjustment || 0 },
+                      { id: '1b', label: 'Standard rated supplies in Dubai', amount: returnDetails.formData?.sales?.standardRated?.dubai?.amount || 0, vat: returnDetails.formData?.sales?.standardRated?.dubai?.vat || 0, adj: returnDetails.formData?.sales?.standardRated?.dubai?.adjustment || 0 },
+                      { id: '1c', label: 'Standard rated supplies in Sharjah', amount: returnDetails.formData?.sales?.standardRated?.sharjah?.amount || 0, vat: returnDetails.formData?.sales?.standardRated?.sharjah?.vat || 0, adj: returnDetails.formData?.sales?.standardRated?.sharjah?.adjustment || 0 },
+                      { id: '1d', label: 'Standard rated supplies in Ajman', amount: returnDetails.formData?.sales?.standardRated?.ajman?.amount || 0, vat: returnDetails.formData?.sales?.standardRated?.ajman?.vat || 0, adj: returnDetails.formData?.sales?.standardRated?.ajman?.adjustment || 0 },
+                      { id: '1e', label: 'Standard rated supplies in Umm Al Quwain', amount: returnDetails.formData?.sales?.standardRated?.ummAlQuwain?.amount || 0, vat: returnDetails.formData?.sales?.standardRated?.ummAlQuwain?.vat || 0, adj: returnDetails.formData?.sales?.standardRated?.ummAlQuwain?.adjustment || 0 },
+                      { id: '1f', label: 'Standard rated supplies in Ras Al Khaimah', amount: returnDetails.formData?.sales?.standardRated?.rasAlKhaimah?.amount || 0, vat: returnDetails.formData?.sales?.standardRated?.rasAlKhaimah?.vat || 0, adj: returnDetails.formData?.sales?.standardRated?.rasAlKhaimah?.adjustment || 0 },
+                      { id: '1g', label: 'Standard rated supplies in Fujairah', amount: returnDetails.formData?.sales?.standardRated?.fujairah?.amount || 0, vat: returnDetails.formData?.sales?.standardRated?.fujairah?.vat || 0, adj: returnDetails.formData?.sales?.standardRated?.fujairah?.adjustment || 0 },
+                      { id: '2', label: 'Tax Refunds provided to Tourists under the Tax Refunds for Tourists Scheme*', amount: returnDetails.formData?.sales?.touristRefunds?.amount || 0, vat: returnDetails.formData?.sales?.touristRefunds?.vat || 0, adj: returnDetails.formData?.sales?.touristRefunds?.adjustment || 0 },
+                      { id: '3', label: 'Supplies subject to the reverse charge provisions*', amount: returnDetails.formData?.sales?.reverseCharge?.amount || 0, vat: returnDetails.formData?.sales?.reverseCharge?.vat || 0, adj: 0 },
+                      { id: '4', label: 'Zero rated supplies*', amount: returnDetails.formData?.sales?.zeroRated?.amount || 0, vat: 0, adj: 0 },
+                      { id: '5', label: 'Exempt supplies*', amount: returnDetails.formData?.sales?.exempt?.amount || 0, vat: 0, adj: 0 },
+                      { id: '6', label: 'Goods imported into the UAE*', amount: returnDetails.formData?.sales?.goodsImported?.amount || 0, vat: returnDetails.formData?.sales?.goodsImported?.vat || 0, adj: 0 },
+                      { id: '7', label: 'Adjustments to goods imported into the UAE*', amount: returnDetails.formData?.sales?.adjustmentsImports?.amount || 0, vat: returnDetails.formData?.sales?.adjustmentsImports?.vat || 0, adj: 0 }
                     ].map((item) => (
-                      <tr key={item.label} className="hover:bg-gray-50/50">
-                        <td className="py-3 font-medium text-gray-700">{item.label}</td>
+                      <tr key={item.id} className="hover:bg-gray-50/50">
+                        <td className="py-3 font-medium text-gray-700">
+                          <span className="inline-block w-5 h-5 bg-gray-100 rounded text-[8px] flex items-center justify-center mr-2 float-left">{item.id}</span>
+                          {item.label}
+                        </td>
                         <td className="py-3 text-right text-gray-600">{(item.amount || 0).toLocaleString(undefined, { minimumFractionDigits: 2 })}</td>
                         <td className="py-3 text-right font-bold text-[#0A192F]">{(item.vat || 0).toLocaleString(undefined, { minimumFractionDigits: 2 })}</td>
-                        <td className="py-3 text-right text-gray-400">0.00</td>
+                        <td className="py-3 text-right text-gray-400">{(item.adj || 0).toLocaleString(undefined, { minimumFractionDigits: 2 })}</td>
                       </tr>
                     ))}
                   </tbody>
+                  <tfoot>
+                    <tr className="bg-[#0A192F] text-white font-bold">
+                      <td className="py-3 px-2">8. Totals</td>
+                      <td className="py-3 text-right px-2">{(returnDetails.totalSales || 0).toLocaleString(undefined, { minimumFractionDigits: 2 })}</td>
+                      <td className="py-3 text-right px-2">{(returnDetails.totalVAT || 0).toLocaleString(undefined, { minimumFractionDigits: 2 })}</td>
+                      <td className="py-3 text-right px-2">0.00</td>
+                    </tr>
+                  </tfoot>
                 </table>
               </div>
             )}
@@ -206,18 +224,28 @@ const VATReturnDetail: React.FC = () => {
                   </thead>
                   <tbody className="divide-y divide-gray-50">
                     {[
-                      { label: 'Standard rated expenses', amount: returnDetails.totalExpenses || 0, vat: returnDetails.totalVAT || 0 },
-                      { label: 'Supplies subject to the reverse charge provisions', amount: 0, vat: 0 },
-                      { label: 'Other expenses', amount: 0, vat: 0 }
+                      { id: '9', label: 'Standard rated expenses*', amount: returnDetails.formData?.expenses?.standardRated?.amount || 0, vat: returnDetails.formData?.expenses?.standardRated?.vat || 0, adj: returnDetails.formData?.expenses?.standardRated?.adjustment || 0 },
+                      { id: '10', label: 'Supplies subject to the reverse charge provisions*', amount: returnDetails.formData?.expenses?.reverseCharge?.amount || 0, vat: returnDetails.formData?.expenses?.reverseCharge?.vat || 0, adj: returnDetails.formData?.expenses?.reverseCharge?.adjustment || 0 }
                     ].map((item) => (
-                      <tr key={item.label} className="hover:bg-gray-50/50">
-                        <td className="py-3 font-medium text-gray-700">{item.label}</td>
+                      <tr key={item.id} className="hover:bg-gray-50/50">
+                        <td className="py-3 font-medium text-gray-700">
+                          <span className="inline-block w-5 h-5 bg-gray-100 rounded text-[8px] flex items-center justify-center mr-2 float-left">{item.id}</span>
+                          {item.label}
+                        </td>
                         <td className="py-3 text-right text-gray-600">{(item.amount || 0).toLocaleString(undefined, { minimumFractionDigits: 2 })}</td>
                         <td className="py-3 text-right font-bold text-[#0A192F]">{(item.vat || 0).toLocaleString(undefined, { minimumFractionDigits: 2 })}</td>
-                        <td className="py-3 text-right text-gray-400">0.00</td>
+                        <td className="py-3 text-right text-gray-400">{(item.adj || 0).toLocaleString(undefined, { minimumFractionDigits: 2 })}</td>
                       </tr>
                     ))}
                   </tbody>
+                  <tfoot>
+                    <tr className="bg-[#0A192F] text-white font-bold">
+                      <td className="py-3 px-2">11. Totals</td>
+                      <td className="py-3 text-right px-2">{(returnDetails.totalExpenses || 0).toLocaleString(undefined, { minimumFractionDigits: 2 })}</td>
+                      <td className="py-3 text-right px-2">{(returnDetails.totalRecoverableVAT || 0).toLocaleString(undefined, { minimumFractionDigits: 2 })}</td>
+                      <td className="py-3 text-right px-2">0.00</td>
+                    </tr>
+                  </tfoot>
                 </table>
               </div>
             )}
@@ -226,18 +254,25 @@ const VATReturnDetail: React.FC = () => {
               <div className="max-w-2xl mx-auto py-8 space-y-8">
                 <div className="bg-gray-50 p-8 rounded border border-gray-100 space-y-4">
                   <div className="flex justify-between items-center pb-4 border-b border-gray-200">
-                    <span className="text-[11px] font-bold text-gray-500 uppercase">Total Output Tax</span>
-                    <span className="text-lg font-bold text-[#0A192F]">AED {(returnDetails.netVAT || 0).toLocaleString(undefined, { minimumFractionDigits: 2 })}</span>
+                    <span className="text-[11px] font-bold text-gray-500 uppercase">Total value of due tax for the period (12)</span>
+                    <span className="text-lg font-bold text-[#0A192F]">AED {(returnDetails.totalVAT || 0).toLocaleString(undefined, { minimumFractionDigits: 2 })}</span>
                   </div>
                   <div className="flex justify-between items-center pb-4 border-b border-gray-200">
-                    <span className="text-[11px] font-bold text-gray-500 uppercase">Total Input Tax Recoverable</span>
-                    <span className="text-lg font-bold text-[#0A192F]">AED 0.00</span>
+                    <span className="text-[11px] font-bold text-gray-500 uppercase">Total value of recoverable tax for the period (13)</span>
+                    <span className="text-lg font-bold text-[#0A192F]">AED {(returnDetails.totalRecoverableVAT || 0).toLocaleString(undefined, { minimumFractionDigits: 2 })}</span>
                   </div>
                   <div className="flex justify-between items-center pt-4">
-                    <span className="text-xs font-bold text-[#B8860B] uppercase tracking-wider">Net VAT Due</span>
+                    <span className="text-xs font-bold text-[#B8860B] uppercase tracking-wider">Payable tax for the period (14)</span>
                     <span className="text-2xl font-black text-[#B8860B]">AED {(returnDetails.netVAT || 0).toLocaleString(undefined, { minimumFractionDigits: 2 })}</span>
                   </div>
                 </div>
+
+                {returnDetails.formData?.refundRequest && (
+                  <div className="p-4 border border-blue-100 bg-blue-50 rounded flex justify-between items-center">
+                    <span className="text-[10px] font-bold text-blue-900 uppercase">Refund requested for excess recoverable tax?</span>
+                    <span className="text-[10px] font-black text-blue-900 uppercase">{returnDetails.formData.refundRequest}</span>
+                  </div>
+                )}
 
                 <div className="p-4 border border-orange-100 bg-orange-50 rounded flex gap-4">
                   <AlertCircle className="text-orange-600 shrink-0" size={20} />

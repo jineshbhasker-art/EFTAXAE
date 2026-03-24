@@ -61,7 +61,7 @@ const NewVATReturn: React.FC = () => {
         rasAlKhaimah: { amount: 0, vat: 0, adjustment: 0 },
         fujairah: { amount: 0, vat: 0, adjustment: 0 },
       },
-      touristRefunds: { amount: 0, vat: 0 },
+      touristRefunds: { amount: 0, vat: 0, adjustment: 0 },
       reverseCharge: { amount: 0, vat: 0 },
       zeroRated: { amount: 0 },
       exempt: { amount: 0 },
@@ -70,8 +70,9 @@ const NewVATReturn: React.FC = () => {
     },
     expenses: {
       standardRated: { amount: 0, vat: 0, adjustment: 0 },
-      reverseCharge: { amount: 0, vat: 0 },
+      reverseCharge: { amount: 0, vat: 0, adjustment: 0 },
     },
+    refundRequest: 'No' as 'Yes' | 'No',
     profitMarginScheme: 'No'
   });
 
@@ -100,27 +101,39 @@ const NewVATReturn: React.FC = () => {
   const calculateSalesTotals = () => {
     let totalAmount = 0;
     let totalVat = 0;
-    Object.values(formData.sales.standardRated).forEach((emirate: any) => {
-      totalAmount += emirate.amount;
-      totalVat += emirate.vat;
+    let totalAdjustment = 0;
+    
+    const standardRated = formData.sales?.standardRated || {};
+    Object.values(standardRated).forEach((emirate: any) => {
+      totalAmount += emirate.amount || 0;
+      totalVat += emirate.vat || 0;
+      totalAdjustment += emirate.adjustment || 0;
     });
-    totalAmount += formData.sales.touristRefunds.amount;
-    totalVat += formData.sales.touristRefunds.vat;
-    totalAmount += formData.sales.reverseCharge.amount;
-    totalVat += formData.sales.reverseCharge.vat;
-    totalAmount += formData.sales.zeroRated.amount;
-    totalAmount += formData.sales.exempt.amount;
-    totalAmount += formData.sales.goodsImported.amount;
-    totalVat += formData.sales.goodsImported.vat;
-    totalAmount += formData.sales.adjustmentsImports.amount;
-    totalVat += formData.sales.adjustmentsImports.vat;
-    return { totalAmount, totalVat };
+
+    totalAmount += formData.sales?.touristRefunds?.amount || 0;
+    totalVat += formData.sales?.touristRefunds?.vat || 0;
+    totalAdjustment += formData.sales?.touristRefunds?.adjustment || 0;
+
+    totalAmount += formData.sales?.reverseCharge?.amount || 0;
+    totalVat += formData.sales?.reverseCharge?.vat || 0;
+
+    totalAmount += formData.sales?.zeroRated?.amount || 0;
+    totalAmount += formData.sales?.exempt?.amount || 0;
+    
+    totalAmount += formData.sales?.goodsImported?.amount || 0;
+    totalVat += formData.sales?.goodsImported?.vat || 0;
+    
+    totalAmount += formData.sales?.adjustmentsImports?.amount || 0;
+    totalVat += formData.sales?.adjustmentsImports?.vat || 0;
+
+    return { totalAmount, totalVat, totalAdjustment };
   };
 
   const calculateExpensesTotals = () => {
-    const totalAmount = formData.expenses.standardRated.amount + formData.expenses.reverseCharge.amount;
-    const totalVat = formData.expenses.standardRated.vat + formData.expenses.reverseCharge.vat;
-    return { totalAmount, totalVat };
+    const totalAmount = (formData.expenses?.standardRated?.amount || 0) + (formData.expenses?.reverseCharge?.amount || 0);
+    const totalVat = (formData.expenses?.standardRated?.vat || 0) + (formData.expenses?.reverseCharge?.vat || 0);
+    const totalAdjustment = (formData.expenses?.standardRated?.adjustment || 0) + (formData.expenses?.reverseCharge?.adjustment || 0);
+    return { totalAmount, totalVat, totalAdjustment };
   };
 
   const salesTotals = calculateSalesTotals();
@@ -377,13 +390,16 @@ const NewVATReturn: React.FC = () => {
                             <input 
                               type="number" 
                               className="input-field text-right"
-                              value={formData.sales.standardRated[emirate.key as keyof typeof formData.sales.standardRated].amount}
+                              value={formData.sales?.standardRated?.[emirate.key as keyof typeof formData.sales.standardRated]?.amount || 0}
                               onChange={(e) => {
                                 const val = parseFloat(e.target.value) || 0;
-                                const newStandard = { ...formData.sales.standardRated };
+                                const newStandard = { ...(formData.sales?.standardRated || {}) } as any;
+                                if (!newStandard[emirate.key as keyof typeof formData.sales.standardRated]) {
+                                  newStandard[emirate.key as keyof typeof formData.sales.standardRated] = { amount: 0, vat: 0, adjustment: 0 };
+                                }
                                 newStandard[emirate.key as keyof typeof formData.sales.standardRated].amount = val;
                                 newStandard[emirate.key as keyof typeof formData.sales.standardRated].vat = val * 0.05;
-                                setFormData({ ...formData, sales: { ...formData.sales, standardRated: newStandard } });
+                                setFormData({ ...formData, sales: { ...formData.sales, standardRated: newStandard } } as any);
                               }}
                             />
                           </td>
@@ -391,7 +407,7 @@ const NewVATReturn: React.FC = () => {
                             <input 
                               type="number" 
                               className="input-field text-right bg-gray-50 font-black text-brand-accent"
-                              value={formData.sales.standardRated[emirate.key as keyof typeof formData.sales.standardRated].vat}
+                              value={formData.sales?.standardRated?.[emirate.key as keyof typeof formData.sales.standardRated]?.vat || 0}
                               readOnly
                             />
                           </td>
@@ -399,32 +415,221 @@ const NewVATReturn: React.FC = () => {
                             <input 
                               type="number" 
                               className="input-field text-right"
-                              value={formData.sales.standardRated[emirate.key as keyof typeof formData.sales.standardRated].adjustment}
+                              value={formData.sales?.standardRated?.[emirate.key as keyof typeof formData.sales.standardRated]?.adjustment || 0}
                               onChange={(e) => {
                                 const val = parseFloat(e.target.value) || 0;
-                                const newStandard = { ...formData.sales.standardRated };
+                                const newStandard = { ...(formData.sales?.standardRated || {}) } as any;
+                                if (!newStandard[emirate.key as keyof typeof formData.sales.standardRated]) {
+                                  newStandard[emirate.key as keyof typeof formData.sales.standardRated] = { amount: 0, vat: 0, adjustment: 0 };
+                                }
                                 newStandard[emirate.key as keyof typeof formData.sales.standardRated].adjustment = val;
-                                setFormData({ ...formData, sales: { ...formData.sales, standardRated: newStandard } });
+                                setFormData({ ...formData, sales: { ...formData.sales, standardRated: newStandard } } as any);
                               }}
                             />
                           </td>
                         </tr>
                       ))}
                       
-                      {/* Special Rows */}
-                      <tr className="bg-brand-surface/30">
+                      {/* Row 2: Tourist Refunds */}
+                      <tr className="hover:bg-brand-surface transition-colors group">
                         <td className="px-8 py-6">
                           <div className="flex items-center gap-4">
-                            <span className="w-6 h-6 rounded-lg bg-brand-accent text-white flex items-center justify-center text-[10px] font-black">6</span>
-                            <span className="text-xs font-black text-brand-primary uppercase tracking-tight">Goods imported into the UAE</span>
+                            <span className="w-6 h-6 rounded-lg bg-gray-100 flex items-center justify-center text-[10px] font-black text-gray-400 group-hover:bg-brand-accent group-hover:text-white transition-all">
+                              2
+                            </span>
+                            <span className="text-xs font-bold text-brand-primary uppercase tracking-tight">Tax Refunds provided to Tourists under the Tax Refunds for Tourists Scheme*</span>
                           </div>
                         </td>
-                        <td className="px-8 py-6 text-right font-black text-brand-primary">AED {(formData.sales.goodsImported.amount || 0).toLocaleString()}</td>
-                        <td className="px-8 py-6 text-right font-black text-brand-accent">AED {(formData.sales.goodsImported.vat || 0).toLocaleString()}</td>
+                        <td className="px-8 py-6">
+                          <input 
+                            type="number" 
+                            className="input-field text-right"
+                            value={formData.sales?.touristRefunds?.amount || 0}
+                            onChange={(e) => setFormData({ ...formData, sales: { ...formData.sales, touristRefunds: { ...(formData.sales?.touristRefunds || { amount: 0, vat: 0, adjustment: 0 }), amount: parseFloat(e.target.value) || 0 } } } as any)}
+                          />
+                        </td>
+                        <td className="px-8 py-6">
+                          <input 
+                            type="number" 
+                            className="input-field text-right"
+                            value={formData.sales?.touristRefunds?.vat || 0}
+                            onChange={(e) => setFormData({ ...formData, sales: { ...formData.sales, touristRefunds: { ...(formData.sales?.touristRefunds || { amount: 0, vat: 0, adjustment: 0 }), vat: parseFloat(e.target.value) || 0 } } } as any)}
+                          />
+                        </td>
+                        <td className="px-8 py-6">
+                          <div className="flex items-center gap-2">
+                            <span className="text-gray-400 font-bold">-</span>
+                            <input 
+                              type="number" 
+                              className="input-field text-right"
+                              value={formData.sales?.touristRefunds?.adjustment || 0}
+                              onChange={(e) => setFormData({ ...formData, sales: { ...formData.sales, touristRefunds: { ...(formData.sales?.touristRefunds || { amount: 0, vat: 0, adjustment: 0 }), adjustment: parseFloat(e.target.value) || 0 } } } as any)}
+                            />
+                          </div>
+                        </td>
+                      </tr>
+
+                      {/* Row 3: Reverse Charge */}
+                      <tr className="hover:bg-brand-surface transition-colors group">
+                        <td className="px-8 py-6">
+                          <div className="flex items-center gap-4">
+                            <span className="w-6 h-6 rounded-lg bg-gray-100 flex items-center justify-center text-[10px] font-black text-gray-400 group-hover:bg-brand-accent group-hover:text-white transition-all">
+                              3
+                            </span>
+                            <span className="text-xs font-bold text-brand-primary uppercase tracking-tight">Supplies subject to the reverse charge provisions*</span>
+                          </div>
+                        </td>
+                        <td className="px-8 py-6">
+                          <input 
+                            type="number" 
+                            className="input-field text-right"
+                            value={formData.sales?.reverseCharge?.amount || 0}
+                            onChange={(e) => setFormData({ ...formData, sales: { ...formData.sales, reverseCharge: { ...(formData.sales?.reverseCharge || { amount: 0, vat: 0 }), amount: parseFloat(e.target.value) || 0 } } } as any)}
+                          />
+                        </td>
+                        <td className="px-8 py-6">
+                          <input 
+                            type="number" 
+                            className="input-field text-right"
+                            value={formData.sales?.reverseCharge?.vat || 0}
+                            onChange={(e) => setFormData({ ...formData, sales: { ...formData.sales, reverseCharge: { ...(formData.sales?.reverseCharge || { amount: 0, vat: 0 }), vat: parseFloat(e.target.value) || 0 } } } as any)}
+                          />
+                        </td>
+                        <td className="px-8 py-6">
+                          <input 
+                            type="number" 
+                            className="input-field text-right bg-gray-100"
+                            readOnly
+                            disabled
+                          />
+                        </td>
+                      </tr>
+
+                      {/* Row 4: Zero Rated */}
+                      <tr className="hover:bg-brand-surface transition-colors group">
+                        <td className="px-8 py-6">
+                          <div className="flex items-center gap-4">
+                            <span className="w-6 h-6 rounded-lg bg-gray-100 flex items-center justify-center text-[10px] font-black text-gray-400 group-hover:bg-brand-accent group-hover:text-white transition-all">
+                              4
+                            </span>
+                            <span className="text-xs font-bold text-brand-primary uppercase tracking-tight">Zero rated supplies*</span>
+                          </div>
+                        </td>
+                        <td className="px-8 py-6">
+                          <input 
+                            type="number" 
+                            className="input-field text-right"
+                            value={formData.sales?.zeroRated?.amount || 0}
+                            onChange={(e) => setFormData({ ...formData, sales: { ...formData.sales, zeroRated: { amount: parseFloat(e.target.value) || 0 } } } as any)}
+                          />
+                        </td>
+                        <td className="px-8 py-6">
+                          <input 
+                            type="number" 
+                            className="input-field text-right bg-gray-100"
+                            readOnly
+                            disabled
+                          />
+                        </td>
+                        <td className="px-8 py-6">
+                          <input 
+                            type="number" 
+                            className="input-field text-right bg-gray-100"
+                            readOnly
+                            disabled
+                          />
+                        </td>
+                      </tr>
+
+                      {/* Row 5: Exempt */}
+                      <tr className="hover:bg-brand-surface transition-colors group">
+                        <td className="px-8 py-6">
+                          <div className="flex items-center gap-4">
+                            <span className="w-6 h-6 rounded-lg bg-gray-100 flex items-center justify-center text-[10px] font-black text-gray-400 group-hover:bg-brand-accent group-hover:text-white transition-all">
+                              5
+                            </span>
+                            <span className="text-xs font-bold text-brand-primary uppercase tracking-tight">Exempt supplies*</span>
+                          </div>
+                        </td>
+                        <td className="px-8 py-6">
+                          <input 
+                            type="number" 
+                            className="input-field text-right"
+                            value={formData.sales?.exempt?.amount || 0}
+                            onChange={(e) => setFormData({ ...formData, sales: { ...formData.sales, exempt: { amount: parseFloat(e.target.value) || 0 } } } as any)}
+                          />
+                        </td>
+                        <td className="px-8 py-6">
+                          <input 
+                            type="number" 
+                            className="input-field text-right bg-gray-100"
+                            readOnly
+                            disabled
+                          />
+                        </td>
+                        <td className="px-8 py-6">
+                          <input 
+                            type="number" 
+                            className="input-field text-right bg-gray-100"
+                            readOnly
+                            disabled
+                          />
+                        </td>
+                      </tr>
+                      
+                      {/* Row 6: Goods Imported */}
+                      <tr className="bg-gray-100/50">
+                        <td className="px-8 py-6">
+                          <div className="flex items-center gap-4">
+                            <span className="w-6 h-6 rounded-lg bg-gray-200 text-gray-500 flex items-center justify-center text-[10px] font-black">6</span>
+                            <span className="text-xs font-black text-brand-primary uppercase tracking-tight">Goods imported into the UAE*</span>
+                          </div>
+                        </td>
+                        <td className="px-8 py-6 text-right font-black text-brand-primary">AED {(formData.sales.goodsImported.amount || 0).toLocaleString(undefined, { minimumFractionDigits: 2 })}</td>
+                        <td className="px-8 py-6 text-right font-black text-brand-accent">AED {(formData.sales.goodsImported.vat || 0).toLocaleString(undefined, { minimumFractionDigits: 2 })}</td>
                         <td className="px-8 py-6 text-right">
-                          <button className="text-[9px] font-black text-brand-accent uppercase tracking-widest hover:underline flex items-center gap-1 ml-auto">
-                            <Eye size={12} /> View Details
-                          </button>
+                          <input 
+                            type="number" 
+                            className="input-field text-right bg-gray-200"
+                            readOnly
+                            disabled
+                          />
+                        </td>
+                      </tr>
+
+                      {/* Row 7: Adjustments to Imports */}
+                      <tr className="hover:bg-brand-surface transition-colors group">
+                        <td className="px-8 py-6">
+                          <div className="flex items-center gap-4">
+                            <span className="w-6 h-6 rounded-lg bg-gray-100 flex items-center justify-center text-[10px] font-black text-gray-400 group-hover:bg-brand-accent group-hover:text-white transition-all">
+                              7
+                            </span>
+                            <span className="text-xs font-bold text-brand-primary uppercase tracking-tight">Adjustments to goods imported into the UAE*</span>
+                          </div>
+                        </td>
+                        <td className="px-8 py-6">
+                          <input 
+                            type="number" 
+                            className="input-field text-right"
+                            value={formData.sales?.adjustmentsImports?.amount || 0}
+                            onChange={(e) => setFormData({ ...formData, sales: { ...formData.sales, adjustmentsImports: { ...(formData.sales?.adjustmentsImports || { amount: 0, vat: 0 }), amount: parseFloat(e.target.value) || 0 } } } as any)}
+                          />
+                        </td>
+                        <td className="px-8 py-6">
+                          <input 
+                            type="number" 
+                            className="input-field text-right"
+                            value={formData.sales?.adjustmentsImports?.vat || 0}
+                            onChange={(e) => setFormData({ ...formData, sales: { ...formData.sales, adjustmentsImports: { ...(formData.sales?.adjustmentsImports || { amount: 0, vat: 0 }), vat: parseFloat(e.target.value) || 0 } } } as any)}
+                          />
+                        </td>
+                        <td className="px-8 py-6">
+                          <input 
+                            type="number" 
+                            className="input-field text-right bg-gray-100"
+                            readOnly
+                            disabled
+                          />
                         </td>
                       </tr>
 
@@ -433,12 +638,12 @@ const NewVATReturn: React.FC = () => {
                         <td className="px-8 py-8">
                           <div className="flex items-center gap-4">
                             <span className="w-6 h-6 rounded-lg bg-white/20 flex items-center justify-center text-[10px] font-black">8</span>
-                            <span className="text-sm font-black uppercase tracking-widest">Total Sales & Output VAT</span>
+                            <span className="text-sm font-black uppercase tracking-widest">Totals</span>
                           </div>
                         </td>
-                        <td className="px-8 py-8 text-right font-black text-lg">AED {salesTotals.totalAmount.toLocaleString()}</td>
-                        <td className="px-8 py-8 text-right font-black text-lg text-brand-accent">AED {salesTotals.totalVat.toLocaleString()}</td>
-                        <td className="px-8 py-8 text-right font-black text-lg">AED 0.00</td>
+                        <td className="px-8 py-8 text-right font-black text-lg">AED {salesTotals.totalAmount.toLocaleString(undefined, { minimumFractionDigits: 2 })}</td>
+                        <td className="px-8 py-8 text-right font-black text-lg text-brand-accent">AED {salesTotals.totalVat.toLocaleString(undefined, { minimumFractionDigits: 2 })}</td>
+                        <td className="px-8 py-8 text-right font-black text-lg">AED {salesTotals.totalAdjustment.toLocaleString(undefined, { minimumFractionDigits: 2 })}</td>
                       </tr>
                     </tbody>
                   </table>
@@ -470,17 +675,17 @@ const NewVATReturn: React.FC = () => {
                         <td className="px-8 py-6">
                           <div className="flex items-center gap-4">
                             <span className="w-6 h-6 rounded-lg bg-gray-100 flex items-center justify-center text-[10px] font-black text-gray-400 group-hover:bg-emerald-500 group-hover:text-white transition-all">9</span>
-                            <span className="text-xs font-bold text-brand-primary uppercase tracking-tight">Standard rated expenses</span>
+                            <span className="text-xs font-bold text-brand-primary uppercase tracking-tight">Standard rated expenses*</span>
                           </div>
                         </td>
                         <td className="px-8 py-6">
                           <input 
                             type="number" 
                             className="input-field text-right"
-                            value={formData.expenses.standardRated.amount}
+                            value={formData.expenses?.standardRated?.amount || 0}
                             onChange={(e) => {
                               const val = parseFloat(e.target.value) || 0;
-                              setFormData({ ...formData, expenses: { ...formData.expenses, standardRated: { ...formData.expenses.standardRated, amount: val, vat: val * 0.05 } } });
+                              setFormData({ ...formData, expenses: { ...formData.expenses, standardRated: { ...(formData.expenses?.standardRated || { amount: 0, vat: 0, adjustment: 0 }), amount: val, vat: val * 0.05 } } } as any);
                             }}
                           />
                         </td>
@@ -488,7 +693,7 @@ const NewVATReturn: React.FC = () => {
                           <input 
                             type="number" 
                             className="input-field text-right bg-gray-50 font-black text-emerald-600"
-                            value={formData.expenses.standardRated.vat}
+                            value={formData.expenses?.standardRated?.vat || 0}
                             readOnly
                           />
                         </td>
@@ -496,8 +701,43 @@ const NewVATReturn: React.FC = () => {
                           <input 
                             type="number" 
                             className="input-field text-right"
-                            value={formData.expenses.standardRated.adjustment}
-                            onChange={(e) => setFormData({ ...formData, expenses: { ...formData.expenses, standardRated: { ...formData.expenses.standardRated, adjustment: parseFloat(e.target.value) || 0 } } })}
+                            value={formData.expenses?.standardRated?.adjustment || 0}
+                            onChange={(e) => setFormData({ ...formData, expenses: { ...formData.expenses, standardRated: { ...(formData.expenses?.standardRated || { amount: 0, vat: 0, adjustment: 0 }), adjustment: parseFloat(e.target.value) || 0 } } } as any)}
+                          />
+                        </td>
+                      </tr>
+                      <tr className="hover:bg-brand-surface transition-colors group">
+                        <td className="px-8 py-6">
+                          <div className="flex items-center gap-4">
+                            <span className="w-6 h-6 rounded-lg bg-gray-100 flex items-center justify-center text-[10px] font-black text-gray-400 group-hover:bg-emerald-500 group-hover:text-white transition-all">10</span>
+                            <span className="text-xs font-bold text-brand-primary uppercase tracking-tight">Supplies subject to the reverse charge provisions*</span>
+                          </div>
+                        </td>
+                        <td className="px-8 py-6">
+                          <input 
+                            type="number" 
+                            className="input-field text-right"
+                            value={formData.expenses?.reverseCharge?.amount || 0}
+                            onChange={(e) => {
+                              const val = parseFloat(e.target.value) || 0;
+                              setFormData({ ...formData, expenses: { ...formData.expenses, reverseCharge: { ...(formData.expenses?.reverseCharge || { amount: 0, vat: 0, adjustment: 0 }), amount: val, vat: val * 0.05 } } } as any);
+                            }}
+                          />
+                        </td>
+                        <td className="px-8 py-6">
+                          <input 
+                            type="number" 
+                            className="input-field text-right bg-gray-50 font-black text-emerald-600"
+                            value={formData.expenses?.reverseCharge?.vat || 0}
+                            readOnly
+                          />
+                        </td>
+                        <td className="px-8 py-6">
+                          <input 
+                            type="number" 
+                            className="input-field text-right"
+                            value={formData.expenses?.reverseCharge?.adjustment || 0}
+                            onChange={(e) => setFormData({ ...formData, expenses: { ...formData.expenses, reverseCharge: { ...(formData.expenses?.reverseCharge || { amount: 0, vat: 0, adjustment: 0 }), adjustment: parseFloat(e.target.value) || 0 } } } as any)}
                           />
                         </td>
                       </tr>
@@ -505,12 +745,12 @@ const NewVATReturn: React.FC = () => {
                         <td className="px-8 py-8">
                           <div className="flex items-center gap-4">
                             <span className="w-6 h-6 rounded-lg bg-white/20 flex items-center justify-center text-[10px] font-black">11</span>
-                            <span className="text-sm font-black uppercase tracking-widest">Total Recoverable VAT</span>
+                            <span className="text-sm font-black uppercase tracking-widest">Totals</span>
                           </div>
                         </td>
-                        <td className="px-8 py-8 text-right font-black text-lg">AED {expensesTotals.totalAmount.toLocaleString()}</td>
-                        <td className="px-8 py-8 text-right font-black text-lg">AED {expensesTotals.totalVat.toLocaleString()}</td>
-                        <td className="px-8 py-8 text-right font-black text-lg">AED 0.00</td>
+                        <td className="px-8 py-8 text-right font-black text-lg">AED {expensesTotals.totalAmount.toLocaleString(undefined, { minimumFractionDigits: 2 })}</td>
+                        <td className="px-8 py-8 text-right font-black text-lg">AED {expensesTotals.totalVat.toLocaleString(undefined, { minimumFractionDigits: 2 })}</td>
+                        <td className="px-8 py-8 text-right font-black text-lg">AED {expensesTotals.totalAdjustment.toLocaleString(undefined, { minimumFractionDigits: 2 })}</td>
                       </tr>
                     </tbody>
                   </table>
@@ -520,20 +760,49 @@ const NewVATReturn: React.FC = () => {
               {/* Net VAT Due Summary */}
               <div className="bg-white rounded-[40px] shadow-2xl border-4 border-brand-accent p-10 relative overflow-hidden">
                 <div className="absolute top-0 right-0 w-64 h-64 bg-brand-accent/5 rounded-full -mr-32 -mt-32 blur-3xl" />
-                <h3 className="text-xl font-black text-brand-primary uppercase tracking-tight mb-8 relative z-10">Net VAT Calculation Summary</h3>
+                <h3 className="text-xl font-black text-brand-primary uppercase tracking-tight mb-8 relative z-10">Net VAT Due</h3>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-8 relative z-10">
                   <div className="p-6 bg-gray-50 rounded-3xl space-y-2">
-                    <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Total Output VAT (12)</p>
-                    <p className="text-2xl font-black text-brand-primary">AED {salesTotals.totalVat.toLocaleString()}</p>
+                    <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Total value of due tax for the period (12)</p>
+                    <p className="text-2xl font-black text-brand-primary">AED {salesTotals.totalVat.toLocaleString(undefined, { minimumFractionDigits: 2 })}</p>
                   </div>
                   <div className="p-6 bg-gray-50 rounded-3xl space-y-2">
-                    <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Total Recoverable VAT (13)</p>
-                    <p className="text-2xl font-black text-emerald-600">AED {expensesTotals.totalVat.toLocaleString()}</p>
+                    <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Total value of recoverable tax for the period (13)</p>
+                    <p className="text-2xl font-black text-emerald-600">AED {expensesTotals.totalVat.toLocaleString(undefined, { minimumFractionDigits: 2 })}</p>
                   </div>
                   <div className="p-6 bg-brand-primary text-white rounded-3xl space-y-2 shadow-xl shadow-brand-primary/20">
-                    <p className="text-[10px] font-black text-white/60 uppercase tracking-widest">Net VAT Payable (14)</p>
-                    <p className="text-2xl font-black text-brand-accent">AED {netVatPayable.toLocaleString()}</p>
+                    <p className="text-[10px] font-black text-white/60 uppercase tracking-widest">Payable tax for the period (14)</p>
+                    <p className="text-2xl font-black text-brand-accent">AED {netVatPayable.toLocaleString(undefined, { minimumFractionDigits: 2 })}</p>
                   </div>
+                </div>
+              </div>
+
+              {/* Refund Request Section */}
+              <div className="bg-white rounded-[40px] shadow-sm border border-gray-100 p-10">
+                <h3 className="text-lg font-black text-brand-primary uppercase tracking-tight mb-6">Do you wish to request a refund for the above amount of excess recoverable tax?</h3>
+                <div className="flex gap-8">
+                  <label className="flex items-center gap-3 cursor-pointer group">
+                    <input 
+                      type="radio" 
+                      name="refundRequest" 
+                      value="Yes"
+                      checked={formData.refundRequest === 'Yes'}
+                      onChange={() => setFormData({ ...formData, refundRequest: 'Yes' })}
+                      className="w-5 h-5 accent-brand-accent"
+                    />
+                    <span className="text-sm font-bold text-gray-600 group-hover:text-brand-primary uppercase tracking-widest">Yes</span>
+                  </label>
+                  <label className="flex items-center gap-3 cursor-pointer group">
+                    <input 
+                      type="radio" 
+                      name="refundRequest" 
+                      value="No"
+                      checked={formData.refundRequest === 'No'}
+                      onChange={() => setFormData({ ...formData, refundRequest: 'No' })}
+                      className="w-5 h-5 accent-brand-accent"
+                    />
+                    <span className="text-sm font-bold text-gray-600 group-hover:text-brand-primary uppercase tracking-widest">No</span>
+                  </label>
                 </div>
               </div>
 
