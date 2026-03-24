@@ -14,8 +14,11 @@ import {
   RotateCcw,
   Trash2,
   CheckCircle2,
-  Clock
+  Clock,
+  FileDown
 } from 'lucide-react';
+import jsPDF from 'jspdf';
+import autoTable from 'jspdf-autotable';
 
 const VATServices: React.FC = () => {
   const navigate = useNavigate();
@@ -66,6 +69,57 @@ const VATServices: React.FC = () => {
     const matchesStatus = statusFilter === 'All' || ret.status === statusFilter;
     return matchesSearch && matchesStatus;
   });
+
+  const handleDownloadPDF = (ret: VATReturn) => {
+    const doc = new jsPDF();
+    
+    // Header
+    doc.setFontSize(20);
+    doc.setTextColor(10, 25, 47); // #0A192F
+    doc.text('VAT 201 - VAT Return Details', 14, 22);
+    
+    doc.setFontSize(10);
+    doc.setTextColor(100);
+    doc.text(`Generated on: ${new Date().toLocaleString()}`, 14, 30);
+    
+    // Company Info (Mock)
+    doc.setFontSize(12);
+    doc.setTextColor(0);
+    doc.text('Taxable Person: MOHAMMAD SHAFIULALAM VEGETABLES AND FRUITS TRADING L.L.C', 14, 45);
+    doc.text(`TRN: ${ret.formData?.vatRef || '100234567890003'}`, 14, 52);
+    doc.text(`Tax Period: ${ret.period}`, 14, 59);
+    doc.text(`Status: ${ret.status}`, 14, 66);
+    
+    // Summary Table
+    autoTable(doc, {
+      startY: 75,
+      head: [['Description', 'Amount (AED)']],
+      body: [
+        ['Total Sales', (ret.totalSales || 0).toLocaleString()],
+        ['Total VAT on Sales', (ret.totalVAT || 0).toLocaleString()],
+        ['Total Expenses', (ret.formData?.expenses?.standardRated?.amount || 0).toLocaleString()],
+        ['Net VAT Payable', (ret.netVAT || 0).toLocaleString()],
+      ],
+      theme: 'striped',
+      headStyles: { fillColor: [184, 134, 11] } // #B8860B
+    });
+    
+    // Footer
+    const pageCount = (doc as any).internal.getNumberOfPages();
+    for (let i = 1; i <= pageCount; i++) {
+      doc.setPage(i);
+      doc.setFontSize(8);
+      doc.setTextColor(150);
+      doc.text(
+        `Federal Tax Authority - UAE VAT Return | Page ${i} of ${pageCount}`,
+        doc.internal.pageSize.getWidth() / 2,
+        doc.internal.pageSize.getHeight() - 10,
+        { align: 'center' }
+      );
+    }
+    
+    doc.save(`VAT_Return_${ret.period.replace(/\s+/g, '_')}.pdf`);
+  };
 
   const handleDelete = async (id: string) => {
     if (!window.confirm('Are you sure you want to delete this return?')) return;
@@ -220,6 +274,13 @@ const VATServices: React.FC = () => {
                     </td>
                     <td className="py-4 px-4 text-right">
                       <div className="flex items-center justify-end gap-2">
+                        <button 
+                          onClick={() => handleDownloadPDF(ret)}
+                          className="p-1.5 text-gray-400 hover:text-[#B8860B] transition-colors"
+                          title="Download PDF"
+                        >
+                          <FileDown size={14} />
+                        </button>
                         <button 
                           onClick={() => navigate(`/vat/${ret.id}`)}
                           className="p-1.5 text-gray-400 hover:text-[#B8860B] transition-colors"

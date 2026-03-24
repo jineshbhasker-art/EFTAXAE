@@ -19,8 +19,11 @@ import {
   Download,
   FileText,
   Printer,
-  ChevronRight
+  ChevronRight,
+  FileDown
 } from 'lucide-react';
+import jsPDF from 'jspdf';
+import autoTable from 'jspdf-autotable';
 
 const VATReturnDetail: React.FC = () => {
   const { id } = useParams();
@@ -48,6 +51,60 @@ const VATReturnDetail: React.FC = () => {
 
     fetchData();
   }, [id]);
+
+  const handleDownloadPDF = () => {
+    if (!returnDetails) return;
+    
+    const doc = new jsPDF();
+    
+    // Header
+    doc.setFontSize(20);
+    doc.setTextColor(10, 25, 47); // #0A192F
+    doc.text('VAT 201 - VAT Return Details', 14, 22);
+    
+    doc.setFontSize(10);
+    doc.setTextColor(100);
+    doc.text(`Generated on: ${new Date().toLocaleString()}`, 14, 30);
+    
+    // Company Info (Mock)
+    doc.setFontSize(12);
+    doc.setTextColor(0);
+    doc.text('Taxable Person: MOHAMMAD SHAFIULALAM VEGETABLES AND FRUITS TRADING L.L.C', 14, 45);
+    doc.text(`TRN: ${returnDetails.vatRef || '100234567890003'}`, 14, 52);
+    doc.text(`Tax Period: ${returnDetails.period}`, 14, 59);
+    doc.text(`Status: ${returnDetails.status}`, 14, 66);
+    
+    // Summary Table
+    autoTable(doc, {
+      startY: 75,
+      head: [['Description', 'Amount (AED)']],
+      body: [
+        ['Total Sales', (returnDetails.totalSales || 0).toLocaleString()],
+        ['Total VAT on Sales', (returnDetails.totalVAT || 0).toLocaleString()],
+        ['Total Expenses', (returnDetails.totalExpenses || 0).toLocaleString()],
+        ['Total Recoverable VAT', (returnDetails.totalRecoverableVAT || 0).toLocaleString()],
+        ['Net VAT Payable', (returnDetails.netVAT || 0).toLocaleString()],
+      ],
+      theme: 'striped',
+      headStyles: { fillColor: [184, 134, 11] } // #B8860B
+    });
+    
+    // Footer
+    const pageCount = (doc as any).internal.getNumberOfPages();
+    for (let i = 1; i <= pageCount; i++) {
+      doc.setPage(i);
+      doc.setFontSize(8);
+      doc.setTextColor(150);
+      doc.text(
+        `Federal Tax Authority - UAE VAT Return | Page ${i} of ${pageCount}`,
+        doc.internal.pageSize.getWidth() / 2,
+        doc.internal.pageSize.getHeight() - 10,
+        { align: 'center' }
+      );
+    }
+    
+    doc.save(`VAT_Return_${returnDetails.period.replace(/\s+/g, '_')}.pdf`);
+  };
 
   if (loading) return <div className="flex items-center justify-center h-screen">Loading Return Details...</div>;
   if (!returnDetails) return <div className="flex items-center justify-center h-screen">Return not found.</div>;
@@ -90,7 +147,10 @@ const VATReturnDetail: React.FC = () => {
               <Printer size={14} />
               Print
             </button>
-            <button className="flex items-center gap-2 px-3 py-1.5 bg-[#B8860B] text-white rounded text-[10px] font-bold hover:bg-[#9A6F09]">
+            <button 
+              onClick={handleDownloadPDF}
+              className="flex items-center gap-2 px-3 py-1.5 bg-[#B8860B] text-white rounded text-[10px] font-bold hover:bg-[#9A6F09]"
+            >
               <Download size={14} />
               Download PDF
             </button>
