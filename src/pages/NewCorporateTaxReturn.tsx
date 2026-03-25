@@ -49,17 +49,17 @@ const NewCorporateTaxReturn: React.FC = () => {
   return (
     <div className="flex flex-col min-h-full bg-[#F8F9FA]">
       {/* Breadcrumbs */}
-      <div className="px-6 py-2 flex items-center gap-2 text-[10px] font-bold text-gray-500 uppercase tracking-wider bg-white border-b border-gray-100">
-        <span className="cursor-pointer hover:text-[#B8860B]" onClick={() => navigate('/')}>Home</span>
-        <ChevronRight size={10} />
-        <span className="cursor-pointer hover:text-[#B8860B]" onClick={() => navigate('/corporate-tax')}>Corporate Tax</span>
-        <ChevronRight size={10} />
-        <span className="text-gray-900">New Corporate Tax Return</span>
+      <div className="px-4 sm:px-6 py-2 flex items-center gap-2 text-[10px] font-bold text-gray-500 uppercase tracking-wider bg-white border-b border-gray-100 overflow-x-auto scrollbar-hide whitespace-nowrap">
+        <span className="cursor-pointer hover:text-[#B8860B] shrink-0" onClick={() => navigate('/')}>Home</span>
+        <ChevronRight size={10} className="shrink-0" />
+        <span className="cursor-pointer hover:text-[#B8860B] shrink-0" onClick={() => navigate('/corporate-tax')}>Corporate Tax</span>
+        <ChevronRight size={10} className="shrink-0" />
+        <span className="text-gray-900 shrink-0">New Corporate Tax Return</span>
       </div>
 
-      <div className="p-6 max-w-4xl mx-auto w-full space-y-6">
+      <div className="p-4 sm:p-6 max-w-4xl mx-auto w-full space-y-4 sm:space-y-6">
         <div className="flex items-center justify-between">
-          <h2 className="text-xl font-bold text-[#0A192F] uppercase">File New Corporate Tax Return</h2>
+          <h2 className="text-lg sm:text-xl font-bold text-[#0A192F] uppercase">File New Corporate Tax Return</h2>
         </div>
 
         {error && (

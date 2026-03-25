@@ -20,6 +20,7 @@ const VATRefund: React.FC = () => {
   const [activeTab, setActiveTab] = useState('Refund Requests');
   const [refunds, setRefunds] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [searchQuery, setSearchQuery] = useState('');
 
   useEffect(() => {
     const fetchRefunds = async () => {
@@ -39,32 +40,32 @@ const VATRefund: React.FC = () => {
   return (
     <div className="flex flex-col h-full bg-[#F8F9FA]">
       {/* Breadcrumbs */}
-      <div className="px-6 py-3 flex items-center gap-2 text-[10px] font-bold text-gray-500 uppercase tracking-wider">
+      <div className="px-4 sm:px-6 py-3 flex items-center gap-2 text-[10px] font-bold text-gray-500 uppercase tracking-wider overflow-x-auto no-scrollbar whitespace-nowrap shrink-0">
         <span className="cursor-pointer hover:text-[#B8860B]" onClick={() => navigate('/')}>Home</span>
-        <ChevronRight size={10} />
+        <ChevronRight size={10} className="shrink-0" />
         <span className="cursor-pointer hover:text-[#B8860B]" onClick={() => navigate('/vat')}>VAT</span>
-        <ChevronRight size={10} />
+        <ChevronRight size={10} className="shrink-0" />
         <span className="cursor-pointer hover:text-[#B8860B]" onClick={() => navigate('/vat/services')}>VAT Services</span>
-        <ChevronRight size={10} />
+        <ChevronRight size={10} className="shrink-0" />
         <span className="text-[#B8860B]">VAT Refund</span>
       </div>
 
-      <div className="flex-1 overflow-y-auto px-6 pb-8 space-y-6">
-        <div className="flex items-center justify-between">
-          <h1 className="text-xl font-bold text-gray-900 uppercase tracking-tight">VAT Refund</h1>
-          <button className="flex items-center gap-2 px-4 py-2 bg-[#B8860B] text-white rounded text-[11px] font-bold hover:bg-[#9A6F09] transition-all">
+      <div className="flex-1 overflow-y-auto px-4 sm:px-6 pb-8 space-y-6">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <h1 className="text-lg sm:text-xl font-bold text-gray-900 uppercase tracking-tight">VAT Refund</h1>
+          <button className="flex items-center justify-center gap-2 px-4 py-2 bg-[#B8860B] text-white rounded text-[11px] font-bold hover:bg-[#9A6F09] transition-all w-full sm:w-auto">
             <Plus size={14} />
             New Refund Request
           </button>
         </div>
 
         {/* Tabs */}
-        <div className="flex border-b border-gray-200">
+        <div className="flex border-b border-gray-200 overflow-x-auto no-scrollbar scrollbar-hide shrink-0">
           {['Refund Requests', 'Refund History'].map((tab) => (
             <button
               key={tab}
               onClick={() => setActiveTab(tab)}
-              className={`px-6 py-3 text-[10px] font-bold uppercase tracking-wider transition-all border-b-2 ${
+              className={`px-4 sm:px-6 py-3 text-[10px] font-bold uppercase tracking-wider whitespace-nowrap transition-all border-b-2 ${
                 activeTab === tab 
                   ? 'border-[#B8860B] text-[#B8860B]' 
                   : 'border-transparent text-gray-500 hover:text-gray-700'
@@ -77,29 +78,31 @@ const VATRefund: React.FC = () => {
 
         {/* Content */}
         <div className="bg-white rounded-lg border border-gray-200 shadow-sm overflow-hidden">
-          <div className="px-4 py-3 border-b border-gray-100 bg-gray-50/50 flex items-center justify-between">
-            <div className="flex items-center gap-4">
-              <div className="relative">
+          <div className="px-4 py-4 border-b border-gray-100 bg-gray-50/50 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4">
+              <div className="relative w-full sm:w-64">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={14} />
                 <input 
                   type="text" 
                   placeholder="Search requests..."
-                  className="pl-9 pr-4 py-1.5 bg-white border border-gray-200 rounded text-[11px] outline-none focus:border-[#B8860B] w-64"
+                  className="w-full pl-9 pr-4 py-2 bg-white border border-gray-200 rounded text-[11px] outline-none focus:border-[#B8860B]"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
                 />
               </div>
-              <button className="flex items-center gap-2 px-3 py-1.5 bg-white border border-gray-200 rounded text-[11px] font-bold text-gray-600 hover:bg-gray-50">
+              <button className="flex items-center justify-center gap-2 px-3 py-2 bg-white border border-gray-200 rounded text-[11px] font-bold text-gray-600 hover:bg-gray-50 w-full sm:w-auto">
                 <Filter size={14} />
                 Filter
               </button>
             </div>
-            <button className="flex items-center gap-2 px-3 py-1.5 bg-white border border-gray-200 rounded text-[11px] font-bold text-gray-600 hover:bg-gray-50">
+            <button className="flex items-center justify-center gap-2 px-3 py-2 bg-white border border-gray-200 rounded text-[11px] font-bold text-gray-600 hover:bg-gray-50 w-full sm:w-auto">
               <Download size={14} />
               Export
             </button>
           </div>
 
-          <div className="overflow-x-auto">
-            <table className="w-full">
+          <div className="overflow-x-auto scrollbar-hide">
+            <table className="w-full min-w-[800px]">
               <thead>
                 <tr className="text-left text-[10px] font-bold text-gray-400 uppercase tracking-wider border-b border-gray-100">
                   <th className="py-3 px-4">Request ID</th>

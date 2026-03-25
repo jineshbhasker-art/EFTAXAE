@@ -13,7 +13,8 @@ import {
   ChevronDown,
   FileSearch,
   Settings,
-  HelpCircle
+  HelpCircle,
+  X
 } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { clsx, type ClassValue } from 'clsx';
@@ -23,7 +24,11 @@ function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
 
-const Sidebar: React.FC = () => {
+interface SidebarProps {
+  onClose?: () => void;
+}
+
+const Sidebar: React.FC<SidebarProps> = ({ onClose }) => {
   const { logout } = useAuth();
 
   const navItems = [
@@ -40,16 +45,24 @@ const Sidebar: React.FC = () => {
   ];
 
   return (
-    <aside className="w-72 bg-brand-primary text-white flex flex-col shrink-0 shadow-2xl z-20 overflow-hidden">
+    <aside className="w-full h-full bg-brand-primary text-white flex flex-col shrink-0 shadow-2xl z-20 overflow-hidden">
       {/* Brand Header */}
-      <div className="p-6 flex items-center gap-3 border-b border-white/10">
-        <div className="w-10 h-10 bg-brand-accent rounded-xl flex items-center justify-center font-bold text-xl text-white shadow-lg shadow-brand-accent/20">
-          E
+      <div className="p-6 flex items-center justify-between border-b border-white/10">
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 bg-brand-accent rounded-xl flex items-center justify-center font-bold text-xl text-white shadow-lg shadow-brand-accent/20">
+            E
+          </div>
+          <div className="flex flex-col">
+            <span className="text-xs font-bold tracking-widest uppercase text-white/60">EmaraTax</span>
+            <span className="text-sm font-black tracking-tight">Authority Portal</span>
+          </div>
         </div>
-        <div className="flex flex-col">
-          <span className="text-xs font-bold tracking-widest uppercase text-white/60">EmaraTax</span>
-          <span className="text-sm font-black tracking-tight">Authority Portal</span>
-        </div>
+        <button 
+          onClick={onClose}
+          className="lg:hidden p-2 hover:bg-white/10 rounded-lg transition-colors"
+        >
+          <X size={20} />
+        </button>
       </div>
 
       <nav className="flex-1 py-6 space-y-1 overflow-y-auto px-3 scrollbar-hide">
@@ -57,6 +70,7 @@ const Sidebar: React.FC = () => {
           <NavLink
             key={item.path}
             to={item.path}
+            onClick={onClose}
             className={({ isActive }) => {
               const isVatActive = item.name === 'VAT' && window.location.pathname.startsWith('/vat');
               return cn(

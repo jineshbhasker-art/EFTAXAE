@@ -39,16 +39,16 @@ const CorrespondencePage: React.FC = () => {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold text-gray-900">My Correspondence</h1>
-        <p className="text-gray-500">View and manage all communications from the tax authority.</p>
+        <h1 className="text-xl sm:text-2xl font-bold text-gray-900">My Correspondence</h1>
+        <p className="text-sm text-gray-500">View and manage all communications from the tax authority.</p>
       </div>
 
-      <div className="flex border-b border-gray-200">
+      <div className="flex border-b border-gray-200 overflow-x-auto no-scrollbar scrollbar-hide shrink-0">
         {tabs.map((tab) => (
           <button
             key={tab}
             onClick={() => setActiveTab(tab as any)}
-            className={`px-6 py-4 text-sm font-bold transition-all border-b-2 ${
+            className={`px-4 sm:px-6 py-4 text-sm font-bold transition-all border-b-2 whitespace-nowrap ${
               activeTab === tab 
                 ? 'border-[#B8860B] text-[#B8860B]' 
                 : 'border-transparent text-gray-500 hover:text-gray-700'
@@ -60,8 +60,8 @@ const CorrespondencePage: React.FC = () => {
       </div>
 
       <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
-        <div className="p-4 border-b flex items-center justify-between bg-gray-50">
-          <div className="relative w-full max-w-md">
+        <div className="p-4 border-b flex flex-col sm:flex-row sm:items-center justify-between bg-gray-50 gap-4">
+          <div className="relative w-full sm:max-w-md">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={16} />
             <input 
               type="text" 
@@ -69,7 +69,7 @@ const CorrespondencePage: React.FC = () => {
               className="w-full pl-10 pr-4 py-2 bg-white border border-gray-200 rounded-lg text-sm outline-none focus:border-[#B8860B]"
             />
           </div>
-          <button className="flex items-center gap-2 px-3 py-2 text-sm font-bold text-gray-600 hover:text-[#B8860B]">
+          <button className="flex items-center justify-center gap-2 px-3 py-2 text-sm font-bold text-gray-600 hover:text-[#B8860B] w-full sm:w-auto">
             <Filter size={16} />
             Filter
           </button>
@@ -85,30 +85,30 @@ const CorrespondencePage: React.FC = () => {
             </div>
           ) : (
             messages.map((msg) => (
-              <div key={msg.id} className="p-6 flex items-center justify-between hover:bg-gray-50 transition-all cursor-pointer group">
-                <div className="flex items-center gap-4">
-                  <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${
+              <div key={msg.id} className="p-4 sm:p-6 flex items-center justify-between hover:bg-gray-50 transition-all cursor-pointer group">
+                <div className="flex items-center gap-3 sm:gap-4">
+                  <div className={`w-10 h-10 sm:w-12 sm:h-12 rounded-xl flex items-center justify-center shrink-0 ${
                     msg.type === 'Certificate' ? 'bg-green-50 text-green-600' :
                     msg.type === 'Audit' ? 'bg-red-50 text-red-600' : 'bg-blue-50 text-blue-600'
                   }`}>
-                    {msg.type === 'Certificate' ? <FileCheck size={24} /> :
-                     msg.type === 'Audit' ? <ShieldAlert size={24} /> : <Mail size={24} />}
+                    {msg.type === 'Certificate' ? <FileCheck size={20} className="sm:w-6 sm:h-6" /> :
+                     msg.type === 'Audit' ? <ShieldAlert size={20} className="sm:w-6 sm:h-6" /> : <Mail size={20} className="sm:w-6 sm:h-6" />}
                   </div>
                   <div>
-                    <h3 className={`font-bold ${msg.status === 'Unread' ? 'text-gray-900' : 'text-gray-600'}`}>
+                    <h3 className={`text-sm sm:text-base font-bold ${msg.status === 'Unread' ? 'text-gray-900' : 'text-gray-600'}`}>
                       {msg.subject}
                     </h3>
-                    <div className="flex items-center gap-3 mt-1">
-                      <span className="text-xs font-bold text-gray-400 uppercase">{msg.type}</span>
-                      <span className="w-1 h-1 bg-gray-300 rounded-full" />
-                      <div className="flex items-center gap-1 text-xs text-gray-400">
+                    <div className="flex flex-wrap items-center gap-2 sm:gap-3 mt-1">
+                      <span className="text-[10px] sm:text-xs font-bold text-gray-400 uppercase">{msg.type}</span>
+                      <span className="hidden sm:block w-1 h-1 bg-gray-300 rounded-full" />
+                      <div className="flex items-center gap-1 text-[10px] sm:text-xs text-gray-400">
                         <Clock size={12} />
                         {format(new Date(msg.createdAt), 'dd MMM yyyy, HH:mm')}
                       </div>
                     </div>
                   </div>
                 </div>
-                <div className="flex items-center gap-4">
+                <div className="flex items-center gap-2 sm:gap-4 shrink-0">
                   {msg.status === 'Unread' && (
                     <span className="w-2 h-2 bg-[#B8860B] rounded-full" />
                   )}

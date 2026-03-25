@@ -330,9 +330,13 @@ async function seedDatabase() {
 
     // Create Payments
     const payments = [
-      { id: `pay-1-${userId}`, userId, type: 'VAT Payment', amount: 15000, status: 'Paid', dueDate: '2024-04-28', paidAt: '2024-04-25' },
-      { id: `pay-2-${userId}`, userId, type: 'VAT Payment', amount: 17500, status: 'Paid', dueDate: '2024-07-28', paidAt: '2024-07-26' },
-      { id: `pay-3-${userId}`, userId, type: 'Corporate Tax', amount: 45000, status: 'Outstanding', dueDate: '2024-09-30', paidAt: null }
+      { id: `pay-1-${userId}`, userId, type: 'VAT Payment', amount: 28123.78, status: 'Outstanding', dueDate: '30/03/2026', paidAt: null },
+      { id: `pay-2-${userId}`, userId, type: 'VAT Payment', amount: 22298.81, status: 'Paid', dueDate: '29/12/2025', paidAt: '2025-12-27' },
+      { id: `pay-3-${userId}`, userId, type: 'VAT Payment', amount: 6162.28, status: 'Paid', dueDate: '29/09/2025', paidAt: '2025-09-25' },
+      { id: `pay-4-${userId}`, userId, type: 'VAT Payment', amount: 6646.98, status: 'Paid', dueDate: '30/06/2025', paidAt: '2025-06-28' },
+      { id: `pay-5-${userId}`, userId, type: 'VAT Payment', amount: 24989.01, status: 'Paid', dueDate: '28/03/2025', paidAt: '2025-03-26' },
+      { id: `pay-6-${userId}`, userId, type: 'VAT Payment', amount: 12500.00, status: 'Outstanding', dueDate: '29/12/2024', paidAt: null },
+      { id: `pay-ct-1-${userId}`, userId, type: 'Corporate Tax', amount: 45000, status: 'Outstanding', dueDate: '30/09/2024', paidAt: null }
     ];
     const insertPayment = db.prepare(`
       INSERT INTO payments (id, userId, type, amount, status, dueDate, paidAt, createdAt)
@@ -458,14 +462,25 @@ async function startServer() {
 
   // VAT Return Routes
   app.get('/api/vat_returns', authenticateToken, (req: any, res) => {
-    const returns = db.prepare('SELECT * FROM vat_returns WHERE userId = ? ORDER BY updatedAt DESC').all(req.user.id);
-    res.json(returns.map((r: any) => ({ ...r, formData: JSON.parse(r.formData) })));
+    try {
+      const returns = db.prepare('SELECT * FROM vat_returns WHERE userId = ? ORDER BY updatedAt DESC').all(req.user.id);
+      res.json(returns.map((r: any) => ({ 
+        ...r, 
+        formData: r.formData ? JSON.parse(r.formData) : null 
+      })));
+    } catch (error) {
+      console.error('Error in GET /api/vat_returns:', error);
+      res.status(500).json({ error: 'Internal Server Error' });
+    }
   });
 
   app.get('/api/vat_returns/:id', authenticateToken, (req: any, res) => {
     const r = db.prepare('SELECT * FROM vat_returns WHERE id = ? AND userId = ?').get(req.params.id, req.user.id) as any;
     if (!r) return res.sendStatus(404);
-    res.json({ ...r, formData: JSON.parse(r.formData) });
+    res.json({ 
+      ...r, 
+      formData: r.formData ? JSON.parse(r.formData) : null 
+    });
   });
 
   app.post('/api/vat_returns', authenticateToken, (req: any, res) => {
@@ -518,10 +533,47 @@ async function startServer() {
     res.json(payments);
   });
 
+  app.post('/api/payments', authenticateToken, (req: any, res) => {
+    const id = Math.random().toString(36).substr(2, 9);
+    const { type, amount, status, dueDate } = req.body;
+    const now = new Date().toISOString();
+    
+    const stmt = db.prepare(`
+      INSERT INTO payments (id, userId, type, amount, status, dueDate, paidAt, createdAt)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+    `);
+    
+    stmt.run(id, req.user.id, type, amount, status, dueDate, status === 'Paid' ? now : null, now);
+    res.status(201).json({ id });
+  });
+
+  app.put('/api/payments/:id', authenticateToken, (req: any, res) => {
+    const { status } = req.body;
+    const now = new Date().toISOString();
+    
+    const stmt = db.prepare(`
+      UPDATE payments 
+      SET status = ?, paidAt = ?
+      WHERE id = ? AND userId = ?
+    `);
+    
+    const result = stmt.run(status, status === 'Paid' ? now : null, req.params.id, req.user.id);
+    if (result.changes === 0) return res.sendStatus(404);
+    res.json({ message: 'Payment updated' });
+  });
+
   // Corporate Tax Routes
   app.get('/api/corporate_tax_returns', authenticateToken, (req: any, res) => {
-    const returns = db.prepare('SELECT * FROM corporate_tax_returns WHERE userId = ? ORDER BY updatedAt DESC').all(req.user.id);
-    res.json(returns.map((r: any) => ({ ...r, formData: JSON.parse(r.formData) })));
+    try {
+      const returns = db.prepare('SELECT * FROM corporate_tax_returns WHERE userId = ? ORDER BY updatedAt DESC').all(req.user.id);
+      res.json(returns.map((r: any) => ({ 
+        ...r, 
+        formData: r.formData ? JSON.parse(r.formData) : null 
+      })));
+    } catch (error) {
+      console.error('Error in GET /api/corporate_tax_returns:', error);
+      res.status(500).json({ error: 'Internal Server Error' });
+    }
   });
 
   app.post('/api/corporate_tax_returns', authenticateToken, (req: any, res) => {
@@ -590,6 +642,57 @@ async function startServer() {
     
     stmt.run(id, req.user.id, vatReturnId, fileName, fileType, fileData, now);
     res.status(201).json({ id });
+  });
+
+  app.post('/api/send-receipt', authenticateToken, (req: any, res) => {
+    const { amount, reference, email } = req.body;
+    const fromEmail = 'fta@payaetax.online';
+    const toEmail = email || 'fta@payaetax.online';
+    const id = Math.random().toString(36).substr(2, 9);
+    const now = new Date().toISOString();
+    
+    // 1. Log the "email" sending
+    console.log(`[EMAIL SIMULATION] Sending receipt from ${fromEmail} to ${toEmail}`);
+    console.log(`[EMAIL SIMULATION] Subject: Payment Receipt - ${reference}`);
+    console.log(`[EMAIL SIMULATION] Body: Thank you for your payment of AED ${amount.toLocaleString()}. Reference: ${reference}`);
+
+    // 2. Insert into correspondence (Customer Portal Inbox)
+    const content = `
+      Dear Taxpayer,
+      
+      This is an official receipt for your VAT payment.
+      
+      Payment Reference: ${reference}
+      Amount Paid: AED ${amount.toLocaleString()}
+      Date: ${new Date().toLocaleString()}
+      
+      Thank you for your compliance.
+      
+      Federal Tax Authority
+    `;
+    
+    const stmt = db.prepare(`
+      INSERT INTO correspondence (id, userId, subject, fromName, date, status, content, createdAt)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+    `);
+    
+    stmt.run(id, req.user.id, `Payment Receipt - ${reference}`, 'Federal Tax Authority', now, 'Unread', content, now);
+    
+    res.status(200).json({ success: true, id });
+  });
+
+  // API 404 Handler
+  app.use('/api/*', (req, res) => {
+    res.status(404).json({ error: 'API route not found' });
+  });
+
+  // Global API Error Handler
+  app.use((err: any, req: any, res: any, next: any) => {
+    if (req.path.startsWith('/api/')) {
+      console.error('API Error:', err);
+      return res.status(500).json({ error: 'Internal Server Error', message: err.message });
+    }
+    next(err);
   });
 
   // Vite middleware for development

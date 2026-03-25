@@ -42,6 +42,8 @@ const NewVATReturn: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [step, setStep] = useState(0); // 0: Instructions, 1: VAT Return, 2: Review
   const [editId, setEditId] = useState<string | null>(null);
+  const [submittedData, setSubmittedData] = useState<any>(null);
+  const [isDeclared, setIsDeclared] = useState(false);
 
   const [formData, setFormData] = useState({
     vatRef: '100354945600003',
@@ -92,7 +94,23 @@ const NewVATReturn: React.FC = () => {
       const data = await dataService.getVATReturn(id);
       if (data && data.formData) {
         const parsedFormData = typeof data.formData === 'string' ? JSON.parse(data.formData) : data.formData;
-        setFormData(parsedFormData);
+        // Merge with existing formData to ensure all fields are present
+        setFormData(prev => ({
+          ...prev,
+          ...parsedFormData,
+          sales: {
+            ...prev.sales,
+            ...(parsedFormData.sales || {}),
+            standardRated: {
+              ...prev.sales.standardRated,
+              ...(parsedFormData.sales?.standardRated || {})
+            }
+          },
+          expenses: {
+            ...prev.expenses,
+            ...(parsedFormData.expenses || {})
+          }
+        }));
       }
     } catch (err) {
       console.error('Error fetching return:', err);
@@ -162,10 +180,12 @@ const NewVATReturn: React.FC = () => {
 
       if (status === 'Submitted') {
         generateVAT201PDF(payload as any);
+        setSubmittedData(payload);
+        showToast('VAT return submitted successfully', 'success');
+      } else {
+        showToast('VAT return saved as draft', 'success');
+        navigate('/vat/my-filings');
       }
-
-      showToast(status === 'Submitted' ? 'VAT return submitted successfully' : 'VAT return saved as draft', 'success');
-      navigate('/vat/my-filings');
     } catch (err: any) {
       console.error('Error saving return:', err);
       showToast(err.message || 'Failed to save return', 'error');
@@ -185,7 +205,7 @@ const NewVATReturn: React.FC = () => {
   ];
 
   const renderStepIndicator = () => (
-    <div className="flex items-center justify-center py-12">
+    <div className="flex items-center justify-center py-8 sm:py-12 px-4">
       <div className="flex items-center w-full max-w-3xl">
         {[
           { id: 0, label: 'Instructions' },
@@ -195,22 +215,23 @@ const NewVATReturn: React.FC = () => {
           <React.Fragment key={s.id}>
             <div className="flex flex-col items-center relative group">
               <div className={cn(
-                "w-12 h-12 rounded-2xl flex items-center justify-center text-sm font-black transition-all duration-500 shadow-lg",
+                "w-10 h-10 sm:w-12 sm:h-12 rounded-xl sm:rounded-2xl flex items-center justify-center text-xs sm:text-sm font-black transition-all duration-500 shadow-lg",
                 step >= s.id 
                   ? "bg-brand-primary text-white shadow-brand-primary/20 scale-110" 
                   : "bg-white text-gray-300 border border-gray-100"
               )}>
-                {step > s.id ? <CheckCircle2 size={24} /> : s.id + 1}
+                {step > s.id ? <CheckCircle2 size={20} className="sm:w-6 sm:h-6" /> : s.id + 1}
               </div>
               <span className={cn(
-                "absolute -bottom-8 text-[10px] font-black uppercase tracking-widest whitespace-nowrap transition-colors duration-500",
-                step >= s.id ? "text-brand-primary" : "text-gray-300"
+                "absolute -bottom-6 sm:-bottom-8 text-[8px] sm:text-[10px] font-black uppercase tracking-widest whitespace-nowrap transition-colors duration-500",
+                step >= s.id ? "text-brand-primary" : "text-gray-300",
+                idx === 0 ? "left-0 sm:left-auto" : idx === 2 ? "right-0 sm:right-auto" : ""
               )}>
                 {s.label}
               </span>
             </div>
             {idx < 2 && (
-              <div className="flex-1 h-1 mx-4 bg-gray-100 rounded-full overflow-hidden">
+              <div className="flex-1 h-0.5 sm:h-1 mx-2 sm:mx-4 bg-gray-100 rounded-full overflow-hidden">
                 <motion.div 
                   initial={{ width: 0 }}
                   animate={{ width: step > s.id ? '100%' : '0%' }}
@@ -224,27 +245,89 @@ const NewVATReturn: React.FC = () => {
     </div>
   );
 
+  if (submittedData) {
+    return (
+      <div className="flex flex-col min-h-full bg-brand-surface">
+        <div className="p-8 max-w-3xl mx-auto w-full space-y-8 py-20">
+          <motion.div 
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            className="bg-white rounded-[40px] shadow-2xl border border-emerald-100 overflow-hidden"
+          >
+            <div className="p-12 flex flex-col items-center text-center space-y-8">
+              <div className="w-24 h-24 bg-emerald-500 rounded-full flex items-center justify-center text-white shadow-2xl shadow-emerald-500/20">
+                <CheckCircle2 size={48} />
+              </div>
+              
+              <div className="space-y-2">
+                <h3 className="text-3xl font-black text-brand-primary uppercase tracking-tight">Submission Successful</h3>
+                <p className="text-sm text-gray-500 font-medium">Your VAT 201 Return has been submitted to the Federal Tax Authority.</p>
+              </div>
+
+              <div className="w-full bg-gray-50 rounded-3xl p-8 space-y-4">
+                <div className="flex justify-between items-center">
+                  <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Reference Number</span>
+                  <span className="text-xs font-black text-brand-primary uppercase">{submittedData.formData?.vatRef || '230010165962'}</span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Net VAT Payable</span>
+                  <span className="text-xs font-black text-brand-primary uppercase">AED {submittedData.netVAT.toLocaleString(undefined, { minimumFractionDigits: 2 })}</span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Submission Date</span>
+                  <span className="text-xs font-black text-brand-primary uppercase">{new Date().toLocaleDateString()}</span>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 w-full">
+                <button 
+                  onClick={() => generateVAT201PDF(submittedData)}
+                  className="flex items-center justify-center gap-3 p-5 bg-gray-100 hover:bg-gray-200 text-brand-primary rounded-2xl transition-all font-black uppercase text-[10px] tracking-widest"
+                >
+                  <Download size={20} /> Download PDF
+                </button>
+                <button 
+                  onClick={() => navigate('/payment-selection', { state: { amount: submittedData.netVAT, reference: submittedData.formData?.vatRef } })}
+                  className="btn-primary p-5 rounded-2xl shadow-2xl shadow-brand-accent/20"
+                >
+                  Proceed to Payment <ArrowRight size={20} />
+                </button>
+              </div>
+
+              <button 
+                onClick={() => navigate('/vat/my-filings')}
+                className="text-[10px] font-black text-gray-400 uppercase tracking-widest hover:text-brand-primary transition-colors"
+              >
+                Go to My Filings
+              </button>
+            </div>
+          </motion.div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="flex flex-col min-h-full bg-brand-surface">
       {/* Advanced Breadcrumbs */}
-      <div className="px-8 py-4 bg-white border-b border-gray-100 flex items-center gap-3 text-[10px] font-bold text-gray-400 uppercase tracking-widest">
-        <span className="hover:text-brand-accent cursor-pointer transition-colors" onClick={() => navigate('/')}>Home</span>
-        <ChevronRight size={12} />
-        <span className="hover:text-brand-accent cursor-pointer transition-colors" onClick={() => navigate('/vat')}>VAT</span>
-        <ChevronRight size={12} />
-        <span className="text-brand-primary">VAT 201 Return</span>
+      <div className="px-4 sm:px-8 py-4 bg-white border-b border-gray-100 flex items-center gap-3 text-[10px] font-bold text-gray-400 uppercase tracking-widest overflow-x-auto scrollbar-hide whitespace-nowrap">
+        <span className="hover:text-brand-accent cursor-pointer transition-colors shrink-0" onClick={() => navigate('/')}>Home</span>
+        <ChevronRight size={12} className="shrink-0" />
+        <span className="hover:text-brand-accent cursor-pointer transition-colors shrink-0" onClick={() => navigate('/vat')}>VAT</span>
+        <ChevronRight size={12} className="shrink-0" />
+        <span className="text-brand-primary shrink-0">VAT 201 Return</span>
       </div>
 
-      <div className="p-8 max-w-7xl mx-auto w-full space-y-8">
-        <div className="flex items-center justify-between">
+      <div className="p-4 sm:p-8 max-w-7xl mx-auto w-full space-y-6 sm:space-y-8">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
-            <h1 className="text-3xl font-black text-brand-primary tracking-tight uppercase">VAT 201 Return</h1>
+            <h1 className="text-2xl sm:text-3xl font-black text-brand-primary tracking-tight uppercase">VAT 201 Return</h1>
             <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mt-1">Period: {formData.period}</p>
           </div>
           <div className="flex items-center gap-4">
-            <div className="px-4 py-2 bg-brand-primary/5 border border-brand-primary/10 rounded-xl">
+            <div className="px-4 py-2 bg-brand-primary/5 border border-brand-primary/10 rounded-xl w-full sm:w-auto">
               <p className="text-[8px] font-bold text-gray-400 uppercase tracking-widest">Net VAT Payable</p>
-              <p className="text-lg font-black text-brand-primary">AED {netVatPayable.toLocaleString(undefined, { minimumFractionDigits: 2 })}</p>
+              <p className="text-base sm:text-lg font-black text-brand-primary">AED {netVatPayable.toLocaleString(undefined, { minimumFractionDigits: 2 })}</p>
             </div>
           </div>
         </div>
@@ -279,38 +362,38 @@ const NewVATReturn: React.FC = () => {
               </div>
 
               <div className="bg-white rounded-[40px] shadow-xl border border-gray-100 overflow-hidden">
-                <div className="p-10 space-y-8">
-                  <div className="flex items-start gap-6">
-                    <div className="p-4 bg-brand-accent/10 rounded-2xl text-brand-accent">
-                      <Info size={32} />
+                <div className="p-6 sm:p-10 space-y-6 sm:space-y-8">
+                  <div className="flex flex-col sm:flex-row items-start gap-4 sm:gap-6">
+                    <div className="p-3 sm:p-4 bg-brand-accent/10 rounded-2xl text-brand-accent">
+                      <Info size={24} className="sm:w-8 sm:h-8" />
                     </div>
-                    <div className="space-y-4">
-                      <h3 className="text-xl font-black text-brand-primary uppercase tracking-tight">About the Service</h3>
-                      <p className="text-sm text-gray-500 leading-relaxed font-medium">
+                    <div className="space-y-3 sm:space-y-4">
+                      <h3 className="text-lg sm:text-xl font-black text-brand-primary uppercase tracking-tight">About the Service</h3>
+                      <p className="text-xs sm:text-sm text-gray-500 leading-relaxed font-medium">
                         Use this service to submit your periodical VAT returns. If you are registered with the FTA, it is mandatory to submit your VAT return based on the allotted tax period. The VAT return needs to be submitted no later than 28th day following the end of the tax period.
                       </p>
                     </div>
                   </div>
 
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-8 pt-8 border-t border-gray-100">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6 sm:gap-8 pt-6 sm:pt-8 border-t border-gray-100">
                     <div className="space-y-4">
                       <h4 className="text-[10px] font-black text-brand-primary uppercase tracking-widest">Tutorial Materials</h4>
                       <div className="flex flex-col gap-3">
-                        <button className="flex items-center gap-3 p-4 bg-gray-50 hover:bg-brand-surface rounded-2xl transition-all group">
-                          <Eye size={20} className="text-brand-accent" />
-                          <span className="text-xs font-bold text-gray-600 group-hover:text-brand-primary uppercase tracking-widest">Watch Video Tutorial</span>
+                        <button className="flex items-center gap-3 p-3 sm:p-4 bg-gray-50 hover:bg-brand-surface rounded-2xl transition-all group">
+                          <Eye size={18} className="text-brand-accent sm:w-5 sm:h-5" />
+                          <span className="text-[10px] sm:text-xs font-bold text-gray-600 group-hover:text-brand-primary uppercase tracking-widest">Watch Video Tutorial</span>
                         </button>
-                        <button className="flex items-center gap-3 p-4 bg-gray-50 hover:bg-brand-surface rounded-2xl transition-all group">
-                          <Download size={20} className="text-brand-accent" />
-                          <span className="text-xs font-bold text-gray-600 group-hover:text-brand-primary uppercase tracking-widest">Download User Manual</span>
+                        <button className="flex items-center gap-3 p-3 sm:p-4 bg-gray-50 hover:bg-brand-surface rounded-2xl transition-all group">
+                          <Download size={18} className="text-brand-accent sm:w-5 sm:h-5" />
+                          <span className="text-[10px] sm:text-xs font-bold text-gray-600 group-hover:text-brand-primary uppercase tracking-widest">Download User Manual</span>
                         </button>
                       </div>
                     </div>
                     <div className="space-y-4">
                       <h4 className="text-[10px] font-black text-brand-primary uppercase tracking-widest">Required Documents</h4>
-                      <div className="p-6 bg-emerald-50 rounded-3xl border border-emerald-100 flex items-center gap-4">
-                        <CheckCircle2 className="text-emerald-500" size={24} />
-                        <span className="text-xs font-bold text-emerald-900 uppercase tracking-widest">No documents required for this filing</span>
+                      <div className="p-5 sm:p-6 bg-emerald-50 rounded-3xl border border-emerald-100 flex items-center gap-4">
+                        <CheckCircle2 className="text-emerald-500" size={20} />
+                        <span className="text-[10px] sm:text-xs font-bold text-emerald-900 uppercase tracking-widest">No documents required for this filing</span>
                       </div>
                     </div>
                   </div>
@@ -340,61 +423,61 @@ const NewVATReturn: React.FC = () => {
               className="space-y-8"
             >
               {/* Filing Info Bar */}
-              <div className="bg-brand-primary rounded-3xl p-8 shadow-2xl text-white grid grid-cols-2 md:grid-cols-4 gap-8 relative overflow-hidden">
+              <div className="bg-brand-primary rounded-3xl p-6 sm:p-8 shadow-2xl text-white grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6 sm:gap-8 relative overflow-hidden">
                 <div className="absolute top-0 right-0 w-64 h-64 bg-white/5 rounded-full -mr-32 -mt-32 blur-3xl" />
                 <div className="space-y-1 relative z-10">
-                  <p className="text-[8px] font-bold text-white/40 uppercase tracking-widest">VAT Return Period</p>
-                  <p className="text-xs font-black uppercase">{formData.period}</p>
+                  <p className="text-[7px] sm:text-[8px] font-bold text-white/40 uppercase tracking-widest">VAT Return Period</p>
+                  <p className="text-[10px] sm:text-xs font-black uppercase">{formData.period}</p>
                 </div>
                 <div className="space-y-1 relative z-10">
-                  <p className="text-[8px] font-bold text-white/40 uppercase tracking-widest">VAT Stagger</p>
-                  <p className="text-xs font-black uppercase">{formData.stagger}</p>
+                  <p className="text-[7px] sm:text-[8px] font-bold text-white/40 uppercase tracking-widest">VAT Stagger</p>
+                  <p className="text-[10px] sm:text-xs font-black uppercase">{formData.stagger}</p>
                 </div>
                 <div className="space-y-1 relative z-10">
-                  <p className="text-[8px] font-bold text-white/40 uppercase tracking-widest">Due Date</p>
-                  <p className="text-xs font-black uppercase">{formData.dueDate}</p>
+                  <p className="text-[7px] sm:text-[8px] font-bold text-white/40 uppercase tracking-widest">Due Date</p>
+                  <p className="text-[10px] sm:text-xs font-black uppercase">{formData.dueDate}</p>
                 </div>
                 <div className="space-y-1 relative z-10">
-                  <p className="text-[8px] font-bold text-white/40 uppercase tracking-widest">Tax Year End</p>
-                  <p className="text-xs font-black uppercase">{formData.taxYearEnd}</p>
+                  <p className="text-[7px] sm:text-[8px] font-bold text-white/40 uppercase tracking-widest">Tax Year End</p>
+                  <p className="text-[10px] sm:text-xs font-black uppercase">{formData.taxYearEnd}</p>
                 </div>
               </div>
 
               {/* VAT on Sales Section */}
               <div className="bg-white rounded-[40px] shadow-sm border border-gray-100 overflow-hidden">
-                <div className="p-8 bg-gray-50/50 border-b border-gray-100 flex items-center justify-between">
+                <div className="p-6 sm:p-8 bg-gray-50/50 border-b border-gray-100 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                   <div className="flex items-center gap-4">
                     <div className="p-3 bg-brand-accent/10 rounded-xl text-brand-accent">
                       <TrendingUp size={24} />
                     </div>
-                    <h3 className="text-lg font-black text-brand-primary uppercase tracking-tight">VAT on Sales and All Other Outputs</h3>
+                    <h3 className="text-base sm:text-lg font-black text-brand-primary uppercase tracking-tight">VAT on Sales and All Other Outputs</h3>
                   </div>
                 </div>
-                <div className="p-0 overflow-x-auto">
-                  <table className="w-full text-left border-collapse">
+                <div className="p-0 overflow-x-auto scrollbar-hide">
+                  <table className="w-full text-left border-collapse min-w-[800px]">
                     <thead>
                       <tr className="bg-gray-50/50 border-b border-gray-100">
-                        <th className="px-8 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest w-1/2">Description</th>
-                        <th className="px-8 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest text-right">Amount (AED)</th>
-                        <th className="px-8 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest text-right">VAT Amount (AED)</th>
-                        <th className="px-8 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest text-right">Adjustment (AED)</th>
+                        <th className="px-6 sm:px-8 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest w-1/2">Description</th>
+                        <th className="px-6 sm:px-8 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest text-right">Amount (AED)</th>
+                        <th className="px-6 sm:px-8 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest text-right">VAT Amount (AED)</th>
+                        <th className="px-6 sm:px-8 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest text-right">Adjustment (AED)</th>
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-gray-100">
                       {emirates.map((emirate, idx) => (
                         <tr key={emirate.key} className="hover:bg-brand-surface transition-colors group">
-                          <td className="px-8 py-6">
+                          <td className="px-6 sm:px-8 py-4 sm:py-6">
                             <div className="flex items-center gap-4">
                               <span className="w-6 h-6 rounded-lg bg-gray-100 flex items-center justify-center text-[10px] font-black text-gray-400 group-hover:bg-brand-accent group-hover:text-white transition-all">
                                 1{String.fromCharCode(97 + idx)}
                               </span>
-                              <span className="text-xs font-bold text-brand-primary uppercase tracking-tight">Standard rated supplies in {emirate.label}</span>
+                              <span className="text-[10px] sm:text-xs font-bold text-brand-primary uppercase tracking-tight">Standard rated supplies in {emirate.label}</span>
                             </div>
                           </td>
-                          <td className="px-8 py-6">
+                          <td className="px-6 sm:px-8 py-4 sm:py-6">
                             <input 
                               type="number" 
-                              className="input-field text-right"
+                              className="input-field text-right text-xs sm:text-sm"
                               value={formData.sales?.standardRated?.[emirate.key as keyof typeof formData.sales.standardRated]?.amount || 0}
                               onChange={(e) => {
                                 const val = parseFloat(e.target.value) || 0;
@@ -408,18 +491,18 @@ const NewVATReturn: React.FC = () => {
                               }}
                             />
                           </td>
-                          <td className="px-8 py-6">
+                          <td className="px-6 sm:px-8 py-4 sm:py-6">
                             <input 
                               type="number" 
-                              className="input-field text-right bg-gray-50 font-black text-brand-accent"
+                              className="input-field text-right bg-gray-50 font-black text-brand-accent text-xs sm:text-sm"
                               value={formData.sales?.standardRated?.[emirate.key as keyof typeof formData.sales.standardRated]?.vat || 0}
                               readOnly
                             />
                           </td>
-                          <td className="px-8 py-6">
+                          <td className="px-6 sm:px-8 py-4 sm:py-6">
                             <input 
                               type="number" 
-                              className="input-field text-right"
+                              className="input-field text-right text-xs sm:text-sm"
                               value={formData.sales?.standardRated?.[emirate.key as keyof typeof formData.sales.standardRated]?.adjustment || 0}
                               onChange={(e) => {
                                 const val = parseFloat(e.target.value) || 0;
@@ -504,6 +587,7 @@ const NewVATReturn: React.FC = () => {
                           <input 
                             type="number" 
                             className="input-field text-right bg-gray-100"
+                            value={0}
                             readOnly
                             disabled
                           />
@@ -532,6 +616,7 @@ const NewVATReturn: React.FC = () => {
                           <input 
                             type="number" 
                             className="input-field text-right bg-gray-100"
+                            value={0}
                             readOnly
                             disabled
                           />
@@ -540,6 +625,7 @@ const NewVATReturn: React.FC = () => {
                           <input 
                             type="number" 
                             className="input-field text-right bg-gray-100"
+                            value={0}
                             readOnly
                             disabled
                           />
@@ -568,6 +654,7 @@ const NewVATReturn: React.FC = () => {
                           <input 
                             type="number" 
                             className="input-field text-right bg-gray-100"
+                            value={0}
                             readOnly
                             disabled
                           />
@@ -576,6 +663,7 @@ const NewVATReturn: React.FC = () => {
                           <input 
                             type="number" 
                             className="input-field text-right bg-gray-100"
+                            value={0}
                             readOnly
                             disabled
                           />
@@ -596,6 +684,7 @@ const NewVATReturn: React.FC = () => {
                           <input 
                             type="number" 
                             className="input-field text-right bg-gray-200"
+                            value={0}
                             readOnly
                             disabled
                           />
@@ -632,6 +721,7 @@ const NewVATReturn: React.FC = () => {
                           <input 
                             type="number" 
                             className="input-field text-right bg-gray-100"
+                            value={0}
                             readOnly
                             disabled
                           />
@@ -883,7 +973,13 @@ const NewVATReturn: React.FC = () => {
                           "I hereby declare that the information provided in this VAT return is true, complete and accurate to the best of my knowledge and belief. I understand that any false or misleading information may lead to penalties and legal action as per the UAE Tax Laws."
                         </p>
                         <div className="flex items-center gap-4 p-4 bg-white rounded-2xl border border-gray-100">
-                          <input type="checkbox" id="declare" className="w-5 h-5 accent-brand-accent rounded-lg" />
+                          <input 
+                            type="checkbox" 
+                            id="declare" 
+                            className="w-5 h-5 accent-brand-accent rounded-lg" 
+                            checked={isDeclared}
+                            onChange={(e) => setIsDeclared(e.target.checked)}
+                          />
                           <label htmlFor="declare" className="text-[10px] font-black text-brand-primary uppercase tracking-widest cursor-pointer">
                             I agree to the declaration statement above
                           </label>

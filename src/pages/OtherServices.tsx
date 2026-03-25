@@ -49,18 +49,18 @@ const OtherServices: React.FC = () => {
   ];
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-6 sm:space-y-8">
       <div>
-        <h1 className="text-2xl font-bold text-gray-900">Other Services</h1>
-        <p className="text-gray-500">Access additional tax-related services and applications.</p>
+        <h1 className="text-xl sm:text-2xl font-bold text-gray-900">Other Services</h1>
+        <p className="text-sm text-gray-500">Access additional tax-related services and applications.</p>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
         {services.map((service) => (
-          <div key={service.title} className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm hover:shadow-md transition-all group">
+          <div key={service.title} className="bg-white p-5 sm:p-6 rounded-2xl border border-gray-100 shadow-sm hover:shadow-md transition-all group">
             <div className="flex items-center justify-between mb-4">
-              <div className={`p-3 rounded-xl ${service.bg} ${service.color}`}>
-                <service.icon size={24} />
+              <div className={`p-2.5 sm:p-3 rounded-xl ${service.bg} ${service.color}`}>
+                <service.icon size={20} className="sm:w-6 sm:h-6" />
               </div>
               <button className="p-2 text-gray-400 hover:text-[#B8860B] transition-colors">
                 <Plus size={20} />

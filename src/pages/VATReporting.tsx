@@ -94,23 +94,23 @@ const VATReporting: React.FC = () => {
   return (
     <div className="flex flex-col min-h-full bg-[#F8F9FA]">
       {/* Breadcrumbs */}
-      <div className="px-6 py-2 flex items-center gap-2 text-[10px] font-bold text-gray-500 uppercase tracking-wider bg-white border-b border-gray-100">
+      <div className="px-4 sm:px-6 py-2 flex items-center gap-2 text-[10px] font-bold text-gray-500 uppercase tracking-wider bg-white border-b border-gray-100 overflow-x-auto no-scrollbar whitespace-nowrap shrink-0">
         <span className="cursor-pointer hover:text-[#B8860B]" onClick={() => navigate('/')}>Home</span>
-        <ChevronRight size={10} />
+        <ChevronRight size={10} className="shrink-0" />
         <span className="cursor-pointer hover:text-[#B8860B]" onClick={() => navigate('/vat')}>VAT</span>
-        <ChevronRight size={10} />
+        <ChevronRight size={10} className="shrink-0" />
         <span className="text-gray-900">VAT Reporting & Analytics</span>
       </div>
 
-      <div className="p-6 space-y-6 overflow-y-auto">
-        <div className="flex items-center justify-between">
+      <div className="p-4 sm:p-6 space-y-6 overflow-y-auto">
+        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
           <h2 className="text-sm font-bold text-[#0A192F] uppercase">VAT Reporting & Analytics</h2>
-          <div className="flex gap-2">
-            <div className="relative">
+          <div className="flex flex-col sm:flex-row gap-2">
+            <div className="relative w-full sm:w-auto">
               <select 
                 value={statusFilter}
                 onChange={(e) => setStatusFilter(e.target.value)}
-                className="pl-8 pr-8 py-1.5 bg-white border border-gray-200 rounded text-[10px] font-bold text-gray-600 outline-none appearance-none cursor-pointer hover:bg-gray-50"
+                className="w-full sm:w-auto pl-8 pr-8 py-2 bg-white border border-gray-200 rounded text-[10px] font-bold text-gray-600 outline-none appearance-none cursor-pointer hover:bg-gray-50"
               >
                 <option value="All">All Statuses</option>
                 <option value="Submitted">Submitted / Filed</option>
@@ -120,7 +120,7 @@ const VATReporting: React.FC = () => {
               <Filter size={14} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
               <ChevronDown size={10} className="absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
             </div>
-            <button className="flex items-center gap-2 px-3 py-1.5 bg-white border border-gray-200 rounded text-[10px] font-bold text-gray-600 hover:bg-gray-50">
+            <button className="flex items-center justify-center gap-2 px-3 py-2 bg-white border border-gray-200 rounded text-[10px] font-bold text-gray-600 hover:bg-gray-50 w-full sm:w-auto">
               <Download size={14} />
               Export PDF
             </button>
@@ -128,7 +128,7 @@ const VATReporting: React.FC = () => {
         </div>
 
         {/* Stats Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           <div className="bg-white p-4 rounded-lg border border-gray-200 shadow-sm space-y-2">
             <div className="flex items-center justify-between">
               <span className="text-[10px] font-bold text-gray-500 uppercase">Total Net VAT</span>
@@ -229,8 +229,8 @@ const VATReporting: React.FC = () => {
           <div className="px-4 py-3 border-b border-gray-100 bg-gray-50/50">
             <h3 className="text-[11px] font-bold text-[#0A192F] uppercase">Recent VAT Activity Summary</h3>
           </div>
-          <div className="overflow-x-auto">
-            <table className="w-full text-[10px]">
+          <div className="overflow-x-auto scrollbar-hide">
+            <table className="w-full text-[10px] min-w-[700px]">
               <thead>
                 <tr className="bg-gray-50 text-left border-b border-gray-100">
                   <th className="px-4 py-3 font-bold text-gray-600 uppercase">Period</th>

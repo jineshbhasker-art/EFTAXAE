@@ -79,61 +79,61 @@ const CorporateTax: React.FC = () => {
   };
 
   return (
-    <div className="space-y-8">
-      <div className="flex items-center justify-between">
+    <div className="space-y-6 sm:space-y-8 p-4 sm:p-0">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900 uppercase">Corporate Tax</h1>
-          <p className="text-gray-500">Manage your corporate tax registrations, filings, and exemptions.</p>
+          <h1 className="text-xl sm:text-2xl font-bold text-gray-900 uppercase">Corporate Tax</h1>
+          <p className="text-sm sm:text-base text-gray-500">Manage your corporate tax registrations, filings, and exemptions.</p>
         </div>
         <button 
           onClick={() => navigate('/corporate-tax/new')}
-          className="flex items-center gap-2 px-4 py-2 bg-[#B8860B] text-white rounded-lg text-sm font-semibold hover:bg-[#9A6F09] transition-all uppercase"
+          className="flex items-center justify-center gap-2 px-4 py-2 bg-[#B8860B] text-white rounded-lg text-sm font-semibold hover:bg-[#9A6F09] transition-all uppercase w-full sm:w-auto"
         >
           <Plus size={18} />
           New Application
         </button>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
+        <div className="bg-white p-5 sm:p-6 rounded-2xl border border-gray-100 shadow-sm">
           <div className="p-3 bg-blue-50 text-blue-600 rounded-xl w-fit mb-4">
             <Briefcase size={24} />
           </div>
-          <h3 className="text-lg font-bold text-gray-900">Filings</h3>
-          <p className="text-sm text-gray-500 mb-4">Manage your annual corporate tax returns.</p>
-          <button className="text-sm font-bold text-[#B8860B] hover:underline">View Filings</button>
+          <h3 className="text-base sm:text-lg font-bold text-gray-900">Filings</h3>
+          <p className="text-xs sm:text-sm text-gray-500 mb-4">Manage your annual corporate tax returns.</p>
+          <button className="text-xs sm:text-sm font-bold text-[#B8860B] hover:underline">View Filings</button>
         </div>
-        <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm">
+        <div className="bg-white p-5 sm:p-6 rounded-2xl border border-gray-100 shadow-sm">
           <div className="p-3 bg-green-50 text-green-600 rounded-xl w-fit mb-4">
             <TrendingUp size={24} />
           </div>
-          <h3 className="text-lg font-bold text-gray-900">Refunds</h3>
-          <p className="text-sm text-gray-500 mb-4">Track and request corporate tax refunds.</p>
-          <button className="text-sm font-bold text-[#B8860B] hover:underline">Track Refunds</button>
+          <h3 className="text-base sm:text-lg font-bold text-gray-900">Refunds</h3>
+          <p className="text-xs sm:text-sm text-gray-500 mb-4">Track and request corporate tax refunds.</p>
+          <button className="text-xs sm:text-sm font-bold text-[#B8860B] hover:underline">Track Refunds</button>
         </div>
-        <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm">
+        <div className="bg-white p-5 sm:p-6 rounded-2xl border border-gray-100 shadow-sm sm:col-span-2 lg:col-span-1">
           <div className="p-3 bg-purple-50 text-purple-600 rounded-xl w-fit mb-4">
             <ShieldCheck size={24} />
           </div>
-          <h3 className="text-lg font-bold text-gray-900">Exemptions</h3>
-          <p className="text-sm text-gray-500 mb-4">Apply for corporate tax exemptions.</p>
-          <button className="text-sm font-bold text-[#B8860B] hover:underline">Manage Exemptions</button>
+          <h3 className="text-base sm:text-lg font-bold text-gray-900">Exemptions</h3>
+          <p className="text-xs sm:text-sm text-gray-500 mb-4">Apply for corporate tax exemptions.</p>
+          <button className="text-xs sm:text-sm font-bold text-[#B8860B] hover:underline">Manage Exemptions</button>
         </div>
       </div>
 
       <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
-        <div className="p-6 border-b border-gray-50">
-          <h2 className="text-lg font-bold text-gray-900">Active Registrations</h2>
+        <div className="p-5 sm:p-6 border-b border-gray-50">
+          <h2 className="text-base sm:text-lg font-bold text-gray-900">Active Registrations</h2>
         </div>
-        <div className="p-6">
-          <table className="w-full">
+        <div className="p-0 sm:p-6 overflow-x-auto scrollbar-hide">
+          <table className="w-full min-w-[600px]">
             <thead>
-              <tr className="text-left text-xs font-bold text-gray-400 uppercase tracking-wider">
-                <th className="pb-4">Tax Period</th>
-                <th className="pb-4">TRN</th>
-                <th className="pb-4">Status</th>
-                <th className="pb-4">Next Filing Due</th>
-                <th className="pb-4"></th>
+              <tr className="text-left text-[10px] sm:text-xs font-bold text-gray-400 uppercase tracking-wider bg-gray-50 sm:bg-transparent">
+                <th className="px-4 sm:px-0 py-4 sm:pb-4">Tax Period</th>
+                <th className="px-4 sm:px-0 py-4 sm:pb-4">TRN</th>
+                <th className="px-4 sm:px-0 py-4 sm:pb-4">Status</th>
+                <th className="px-4 sm:px-0 py-4 sm:pb-4">Next Filing Due</th>
+                <th className="px-4 sm:px-0 py-4 sm:pb-4"></th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-50">
@@ -144,18 +144,18 @@ const CorporateTax: React.FC = () => {
               ) : (
                 registrations.map((reg) => (
                   <tr key={reg.id} className="group">
-                    <td className="py-4 font-bold text-gray-900">2024</td>
-                    <td className="py-4 text-sm text-gray-600 font-mono">{reg.trn}</td>
-                    <td className="py-4">
+                    <td className="px-4 sm:px-0 py-4 font-bold text-gray-900 text-sm sm:text-base">2024</td>
+                    <td className="px-4 sm:px-0 py-4 text-xs sm:text-sm text-gray-600 font-mono">{reg.trn}</td>
+                    <td className="px-4 sm:px-0 py-4">
                       <span className={cn(
-                        "px-2 py-1 rounded-full text-[10px] font-bold uppercase",
+                        "px-2 py-1 rounded-full text-[9px] sm:text-[10px] font-bold uppercase",
                         reg.status === 'Active' ? "bg-green-100 text-green-700" : "bg-amber-100 text-amber-700"
                       )}>
                         {reg.status}
                       </span>
                     </td>
-                    <td className="py-4 text-sm text-gray-500">2025-09-30</td>
-                    <td className="py-4 text-right">
+                    <td className="px-4 sm:px-0 py-4 text-xs sm:text-sm text-gray-500">2025-09-30</td>
+                    <td className="px-4 sm:px-0 py-4 text-right">
                       <button className="p-2 text-gray-400 hover:text-[#B8860B] transition-colors">
                         <ArrowUpRight size={18} />
                       </button>
@@ -169,38 +169,38 @@ const CorporateTax: React.FC = () => {
       </div>
 
       <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
-        <div className="p-6 border-b border-gray-50 flex items-center justify-between">
-          <h2 className="text-lg font-bold text-gray-900">Recent Corporate Tax Returns</h2>
-          <button className="text-sm font-bold text-[#B8860B] hover:underline">View All</button>
+        <div className="p-5 sm:p-6 border-b border-gray-50 flex items-center justify-between">
+          <h2 className="text-base sm:text-lg font-bold text-gray-900">Recent Corporate Tax Returns</h2>
+          <button className="text-xs sm:text-sm font-bold text-[#B8860B] hover:underline">View All</button>
         </div>
-        <div className="p-6">
+        <div className="p-0 sm:p-6 overflow-x-auto scrollbar-hide">
           {loading ? (
             <div className="py-8 text-center text-gray-500 text-sm">Loading returns...</div>
           ) : recentReturns.length === 0 ? (
             <div className="py-8 text-center text-gray-500 text-sm">No recent Corporate Tax returns found.</div>
           ) : (
-            <table className="w-full">
+            <table className="w-full min-w-[600px]">
               <thead>
-                <tr className="text-left text-xs font-bold text-gray-400 uppercase tracking-wider">
-                  <th className="pb-4">Accounting Period</th>
-                  <th className="pb-4">Status</th>
-                  <th className="pb-4">Tax Amount</th>
-                  <th className="pb-4 text-right">Action</th>
+                <tr className="text-left text-[10px] sm:text-xs font-bold text-gray-400 uppercase tracking-wider bg-gray-50 sm:bg-transparent">
+                  <th className="px-4 sm:px-0 py-4 sm:pb-4">Accounting Period</th>
+                  <th className="px-4 sm:px-0 py-4 sm:pb-4">Status</th>
+                  <th className="px-4 sm:px-0 py-4 sm:pb-4">Tax Amount</th>
+                  <th className="px-4 sm:px-0 py-4 sm:pb-4 text-right">Action</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-50">
                 {recentReturns.map((ret) => (
                   <tr key={ret.id} className="group">
-                    <td className="py-4">
+                    <td className="px-4 sm:px-0 py-4">
                       <div className="flex items-center gap-3">
                         <div className="p-2 bg-gray-50 rounded-lg text-gray-400">
                           <FileText size={18} />
                         </div>
-                        <span className="font-bold text-gray-900">{ret.accountingPeriod}</span>
+                        <span className="font-bold text-gray-900 text-sm sm:text-base">{ret.accountingPeriod}</span>
                       </div>
                     </td>
-                    <td className="py-4">
-                      <span className={`px-2 py-1 rounded-full text-[10px] font-bold uppercase flex items-center gap-1 w-fit ${
+                    <td className="px-4 sm:px-0 py-4">
+                      <span className={`px-2 py-1 rounded-full text-[9px] sm:text-[10px] font-bold uppercase flex items-center gap-1 w-fit ${
                         ret.status === 'Submitted' || ret.status === 'Filed' ? 'bg-green-100 text-green-700' : 
                         ret.status === 'Draft' ? 'bg-orange-100 text-orange-700' : 'bg-red-100 text-red-700'
                       }`}>
@@ -209,10 +209,10 @@ const CorporateTax: React.FC = () => {
                         {ret.status}
                       </span>
                     </td>
-                    <td className="py-4 font-bold text-gray-900">
+                    <td className="px-4 sm:px-0 py-4 font-bold text-gray-900 text-sm sm:text-base">
                       AED {(ret.taxAmount || 0).toLocaleString()}
                     </td>
-                    <td className="py-4 text-right">
+                    <td className="px-4 sm:px-0 py-4 text-right">
                       <div className="flex items-center justify-end gap-2">
                         <button className="p-2 text-gray-400 hover:text-[#B8860B] transition-colors">
                           <ArrowUpRight size={18} />

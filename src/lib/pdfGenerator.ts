@@ -87,20 +87,20 @@ export const generateVAT201PDF = (ret: VATReturn) => {
   doc.text('VAT on Sales and All Other outputs', margin + 2, salesY + 5);
 
   const salesData = [
-    ['1a', 'Standard Rated Supplies in Abu Dhabi', (ret.formData?.sales?.standardRated?.abuDhabi?.amount || 0).toFixed(2), (ret.formData?.sales?.standardRated?.abuDhabi?.vat || 0).toFixed(2), '0.00'],
-    ['1b', 'Standard Rated Supplies in Dubai', (ret.formData?.sales?.standardRated?.dubai?.amount || 0).toFixed(2), (ret.formData?.sales?.standardRated?.dubai?.vat || 0).toFixed(2), '0.00'],
-    ['1c', 'Standard Rated Supplies in Sharjah', (ret.formData?.sales?.standardRated?.sharjah?.amount || 0).toFixed(2), (ret.formData?.sales?.standardRated?.sharjah?.vat || 0).toFixed(2), '0.00'],
-    ['1d', 'Standard Rated Supplies in Ajman', (ret.formData?.sales?.standardRated?.ajman?.amount || 0).toFixed(2), (ret.formData?.sales?.standardRated?.ajman?.vat || 0).toFixed(2), '0.00'],
-    ['1e', 'Standard Rated Supplies in Umm Al Quwain', (ret.formData?.sales?.standardRated?.ummAlQuwain?.amount || 0).toFixed(2), (ret.formData?.sales?.standardRated?.ummAlQuwain?.vat || 0).toFixed(2), '0.00'],
-    ['1f', 'Standard Rated Supplies in Ras Al Khaimah', (ret.formData?.sales?.standardRated?.rasAlKhaimah?.amount || 0).toFixed(2), (ret.formData?.sales?.standardRated?.rasAlKhaimah?.vat || 0).toFixed(2), '0.00'],
-    ['1g', 'Standard Rated Supplies in Fujairah', (ret.formData?.sales?.standardRated?.fujairah?.amount || 0).toFixed(2), (ret.formData?.sales?.standardRated?.fujairah?.vat || 0).toFixed(2), '0.00'],
+    ['1a', 'Standard Rated Supplies in Abu Dhabi', (ret.formData?.sales?.standardRated?.abuDhabi?.amount || 0).toLocaleString(undefined, { minimumFractionDigits: 2 }), (ret.formData?.sales?.standardRated?.abuDhabi?.vat || 0).toLocaleString(undefined, { minimumFractionDigits: 2 }), '0.00'],
+    ['1b', 'Standard Rated Supplies in Dubai', (ret.formData?.sales?.standardRated?.dubai?.amount || 0).toLocaleString(undefined, { minimumFractionDigits: 2 }), (ret.formData?.sales?.standardRated?.dubai?.vat || 0).toLocaleString(undefined, { minimumFractionDigits: 2 }), '0.00'],
+    ['1c', 'Standard Rated Supplies in Sharjah', (ret.formData?.sales?.standardRated?.sharjah?.amount || 0).toLocaleString(undefined, { minimumFractionDigits: 2 }), (ret.formData?.sales?.standardRated?.sharjah?.vat || 0).toLocaleString(undefined, { minimumFractionDigits: 2 }), '0.00'],
+    ['1d', 'Standard Rated Supplies in Ajman', (ret.formData?.sales?.standardRated?.ajman?.amount || 0).toLocaleString(undefined, { minimumFractionDigits: 2 }), (ret.formData?.sales?.standardRated?.ajman?.vat || 0).toLocaleString(undefined, { minimumFractionDigits: 2 }), '0.00'],
+    ['1e', 'Standard Rated Supplies in Umm Al Quwain', (ret.formData?.sales?.standardRated?.ummAlQuwain?.amount || 0).toLocaleString(undefined, { minimumFractionDigits: 2 }), (ret.formData?.sales?.standardRated?.ummAlQuwain?.vat || 0).toLocaleString(undefined, { minimumFractionDigits: 2 }), '0.00'],
+    ['1f', 'Standard Rated Supplies in Ras Al Khaimah', (ret.formData?.sales?.standardRated?.rasAlKhaimah?.amount || 0).toLocaleString(undefined, { minimumFractionDigits: 2 }), (ret.formData?.sales?.standardRated?.rasAlKhaimah?.vat || 0).toLocaleString(undefined, { minimumFractionDigits: 2 }), '0.00'],
+    ['1g', 'Standard Rated Supplies in Fujairah', (ret.formData?.sales?.standardRated?.fujairah?.amount || 0).toLocaleString(undefined, { minimumFractionDigits: 2 }), (ret.formData?.sales?.standardRated?.fujairah?.vat || 0).toLocaleString(undefined, { minimumFractionDigits: 2 }), '0.00'],
     ['2', 'Tax Refunds provided to Tourists', '0.00', '0.00', '0.00'],
-    ['3', 'Supplies subject to reverse charge', (ret.formData?.sales?.reverseCharge?.amount || 0).toFixed(2), (ret.formData?.sales?.reverseCharge?.vat || 0).toFixed(2), ''],
-    ['4', 'Zero Rated Supplies', (ret.formData?.sales?.zeroRated?.amount || 0).toFixed(2), '', ''],
-    ['5', 'Exempt Supplies', (ret.formData?.sales?.exempt?.amount || 0).toFixed(2), '', ''],
-    ['6', 'Goods imported into the UAE', (ret.formData?.sales?.goodsImported?.amount || 0).toFixed(2), (ret.formData?.sales?.goodsImported?.vat || 0).toFixed(2), ''],
-    ['7', 'Adjustments to goods imported', (ret.formData?.sales?.adjustmentsImports?.amount || 0).toFixed(2), (ret.formData?.sales?.adjustmentsImports?.vat || 0).toFixed(2), ''],
-    ['8', 'Totals', (ret.totalSales || 0).toFixed(2), (ret.totalVAT || 0).toFixed(2), '0.00']
+    ['3', 'Supplies subject to reverse charge', (ret.formData?.sales?.reverseCharge?.amount || 0).toLocaleString(undefined, { minimumFractionDigits: 2 }), (ret.formData?.sales?.reverseCharge?.vat || 0).toLocaleString(undefined, { minimumFractionDigits: 2 }), ''],
+    ['4', 'Zero Rated Supplies', (ret.formData?.sales?.zeroRated?.amount || 0).toLocaleString(undefined, { minimumFractionDigits: 2 }), '', ''],
+    ['5', 'Exempt Supplies', (ret.formData?.sales?.exempt?.amount || 0).toLocaleString(undefined, { minimumFractionDigits: 2 }), '', ''],
+    ['6', 'Goods imported into the UAE', (ret.formData?.sales?.goodsImported?.amount || 0).toLocaleString(undefined, { minimumFractionDigits: 2 }), (ret.formData?.sales?.goodsImported?.vat || 0).toLocaleString(undefined, { minimumFractionDigits: 2 }), ''],
+    ['7', 'Adjustments to goods imported', (ret.formData?.sales?.adjustmentsImports?.amount || 0).toLocaleString(undefined, { minimumFractionDigits: 2 }), (ret.formData?.sales?.adjustmentsImports?.vat || 0).toLocaleString(undefined, { minimumFractionDigits: 2 }), ''],
+    ['8', 'Totals', (ret.totalSales || 0).toLocaleString(undefined, { minimumFractionDigits: 2 }), (ret.totalVAT || 0).toLocaleString(undefined, { minimumFractionDigits: 2 }), '0.00']
   ];
 
   autoTable(doc, {
@@ -133,9 +133,9 @@ export const generateVAT201PDF = (ret: VATReturn) => {
   doc.text('VAT on Expenses and All Other Inputs', margin + 2, expensesY + 5);
 
   const expensesData = [
-    ['9', 'Standard Rated Expenses', (ret.formData?.expenses?.standardRated?.amount || 0).toFixed(2), (ret.formData?.expenses?.standardRated?.vat || 0).toFixed(2), '0.00'],
-    ['10', 'Supplies subject to reverse charge', (ret.formData?.expenses?.reverseCharge?.amount || 0).toFixed(2), (ret.formData?.expenses?.reverseCharge?.vat || 0).toFixed(2), ''],
-    ['11', 'Totals', (ret.totalExpenses || 0).toFixed(2), (ret.totalRecoverableVAT || 0).toFixed(2), '0.00']
+    ['9', 'Standard Rated Expenses', (ret.formData?.expenses?.standardRated?.amount || 0).toLocaleString(undefined, { minimumFractionDigits: 2 }), (ret.formData?.expenses?.standardRated?.vat || 0).toLocaleString(undefined, { minimumFractionDigits: 2 }), '0.00'],
+    ['10', 'Supplies subject to reverse charge', (ret.formData?.expenses?.reverseCharge?.amount || 0).toLocaleString(undefined, { minimumFractionDigits: 2 }), (ret.formData?.expenses?.reverseCharge?.vat || 0).toLocaleString(undefined, { minimumFractionDigits: 2 }), ''],
+    ['11', 'Totals', (ret.totalExpenses || 0).toLocaleString(undefined, { minimumFractionDigits: 2 }), (ret.totalRecoverableVAT || 0).toLocaleString(undefined, { minimumFractionDigits: 2 }), '0.00']
   ];
 
   autoTable(doc, {
@@ -168,9 +168,9 @@ export const generateVAT201PDF = (ret: VATReturn) => {
   doc.text('Net VAT Due', margin + 2, netY + 5);
 
   const netData = [
-    ['12', 'Total Value of due tax for the period', (ret.totalVAT || 0).toFixed(2)],
-    ['13', 'Total Value of recoverable tax for the period', (ret.totalRecoverableVAT || 0).toFixed(2)],
-    ['14', 'Payable tax for the period', (ret.netVAT || 0).toFixed(2)]
+    ['12', 'Total Value of due tax for the period', (ret.totalVAT || 0).toLocaleString(undefined, { minimumFractionDigits: 2 })],
+    ['13', 'Total Value of recoverable tax for the period', (ret.totalRecoverableVAT || 0).toLocaleString(undefined, { minimumFractionDigits: 2 })],
+    ['14', 'Payable tax for the period', (ret.netVAT || 0).toLocaleString(undefined, { minimumFractionDigits: 2 })]
   ];
 
   autoTable(doc, {

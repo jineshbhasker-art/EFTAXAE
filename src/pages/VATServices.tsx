@@ -139,19 +139,19 @@ const VATServices: React.FC = () => {
   return (
     <div className="flex flex-col h-full bg-[#F8F9FA]">
       {/* Breadcrumbs */}
-      <div className="px-6 py-3 flex items-center gap-2 text-[10px] font-bold text-gray-500 uppercase tracking-wider">
+      <div className="px-4 sm:px-6 py-3 flex items-center gap-2 text-[10px] font-bold text-gray-500 uppercase tracking-wider overflow-x-auto no-scrollbar whitespace-nowrap shrink-0">
         <span className="cursor-pointer hover:text-[#B8860B]" onClick={() => navigate('/')}>Home</span>
-        <ChevronRight size={10} />
+        <ChevronRight size={10} className="shrink-0" />
         <span className="text-[#B8860B]">VAT Services</span>
       </div>
 
-      <div className="flex-1 overflow-y-auto px-6 pb-8 space-y-6">
-        <div className="flex items-center justify-between">
-          <h1 className="text-xl font-bold text-gray-900 uppercase tracking-tight">VAT Services</h1>
+      <div className="flex-1 overflow-y-auto px-4 sm:px-6 pb-8 space-y-6">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <h1 className="text-lg sm:text-xl font-bold text-gray-900 uppercase tracking-tight">VAT Services</h1>
         </div>
 
         {/* Main Tabs */}
-        <div className="flex border-b border-gray-200 overflow-x-auto no-scrollbar">
+        <div className="flex border-b border-gray-200 overflow-x-auto no-scrollbar scrollbar-hide shrink-0">
           {mainTabs.map((tab) => (
             <button
               key={tab}
@@ -162,7 +162,7 @@ const VATServices: React.FC = () => {
                   setActiveTab(tab);
                 }
               }}
-              className={`px-6 py-3 text-[10px] font-bold uppercase tracking-wider whitespace-nowrap transition-all border-b-2 ${
+              className={`px-4 sm:px-6 py-3 text-[10px] font-bold uppercase tracking-wider whitespace-nowrap transition-all border-b-2 ${
                 activeTab === tab 
                   ? 'border-[#B8860B] text-[#B8860B]' 
                   : 'border-transparent text-gray-500 hover:text-gray-700'
@@ -176,12 +176,12 @@ const VATServices: React.FC = () => {
         {activeTab === 'VAT Returns' && (
           <>
             {/* Sub Tabs */}
-            <div className="flex gap-4">
+            <div className="flex gap-3 sm:gap-4 overflow-x-auto no-scrollbar scrollbar-hide pb-1 shrink-0">
               {subTabs.map((tab) => (
                 <button
                   key={tab}
                   onClick={() => setActiveSubTab(tab)}
-                  className={`px-4 py-2 text-[10px] font-bold uppercase tracking-wider rounded transition-all ${
+                  className={`px-3 sm:px-4 py-2 text-[10px] font-bold uppercase tracking-wider rounded transition-all whitespace-nowrap ${
                     activeSubTab === tab 
                       ? 'bg-[#0A192F] text-white' 
                       : 'bg-white text-gray-500 border border-gray-200 hover:bg-gray-50'
@@ -194,23 +194,23 @@ const VATServices: React.FC = () => {
 
             {/* Content Area */}
             <div className="bg-white rounded-lg border border-gray-200 shadow-sm overflow-hidden">
-              <div className="px-4 py-3 border-b border-gray-100 bg-gray-50/50 flex items-center justify-between">
-                <div className="flex items-center gap-4">
-                  <div className="relative">
+              <div className="px-4 py-4 border-b border-gray-100 bg-gray-50/50 flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+                <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4">
+                  <div className="relative w-full sm:w-64">
                     <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={14} />
                     <input 
                       type="text" 
                       placeholder="Search returns..."
                       value={searchTerm}
                       onChange={(e) => setSearchTerm(e.target.value)}
-                      className="pl-9 pr-4 py-1.5 bg-white border border-gray-200 rounded text-[11px] outline-none focus:border-[#B8860B] w-64"
+                      className="w-full pl-9 pr-4 py-2 bg-white border border-gray-200 rounded text-[11px] outline-none focus:border-[#B8860B]"
                     />
                   </div>
-                  <div className="relative">
+                  <div className="relative w-full sm:w-auto">
                     <select 
                       value={statusFilter}
                       onChange={(e) => setStatusFilter(e.target.value)}
-                      className="pl-3 pr-8 py-1.5 bg-white border border-gray-200 rounded text-[11px] font-bold text-gray-600 outline-none appearance-none cursor-pointer"
+                      className="w-full sm:w-auto pl-3 pr-8 py-2 bg-white border border-gray-200 rounded text-[11px] font-bold text-gray-600 outline-none appearance-none cursor-pointer"
                     >
                       <option value="All">All Statuses</option>
                       <option value="Draft">Draft</option>
@@ -222,22 +222,22 @@ const VATServices: React.FC = () => {
                   </div>
                 </div>
                 <div className="flex items-center gap-2">
-                  <button className="flex items-center gap-2 px-3 py-1.5 bg-white border border-gray-200 rounded text-[11px] font-bold text-gray-600 hover:bg-gray-50">
+                  <button className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-3 py-2 bg-white border border-gray-200 rounded text-[11px] font-bold text-gray-600 hover:bg-gray-50">
                     <Download size={14} />
                     Export
                   </button>
                   <button 
                     onClick={() => navigate('/vat/new')}
-                    className="flex items-center gap-2 px-4 py-1.5 bg-[#B8860B] text-white rounded text-[11px] font-bold hover:bg-[#9A6F09] transition-all"
+                    className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-4 py-2 bg-[#B8860B] text-white rounded text-[11px] font-bold hover:bg-[#9A6F09] transition-all"
                   >
                     <Plus size={14} />
-                    Add New VAT Return
+                    <span className="whitespace-nowrap">Add New VAT Return</span>
                   </button>
                 </div>
               </div>
 
-              <div className="overflow-x-auto">
-                <table className="w-full">
+              <div className="overflow-x-auto scrollbar-hide">
+                <table className="w-full min-w-[900px]">
                   <thead>
                     <tr className="text-left text-[10px] font-bold text-gray-400 uppercase tracking-wider border-b border-gray-100">
                       <th className="py-3 px-4">Tax Period</th>
@@ -349,15 +349,15 @@ const VATServices: React.FC = () => {
 
         {activeTab === 'Document Upload' && (
           <div className="space-y-6">
-            <div className="bg-white rounded-lg border border-gray-200 shadow-sm p-6">
-              <h2 className="text-sm font-bold text-gray-900 uppercase tracking-wider mb-4">Upload New Document</h2>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="bg-white rounded-lg border border-gray-200 shadow-sm p-4 sm:p-6">
+              <h2 className="text-xs sm:text-sm font-bold text-gray-900 uppercase tracking-wider mb-4">Upload New Document</h2>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
                 <div className="space-y-2">
                   <label className="text-[10px] font-bold text-gray-500 uppercase tracking-wider">Select VAT Return Reference</label>
                   <select 
                     value={selectedReturnId}
                     onChange={(e) => setSelectedReturnId(e.target.value)}
-                    className="w-full px-3 py-2 bg-white border border-gray-200 rounded text-[11px] outline-none focus:border-[#B8860B]"
+                    className="w-full px-3 py-2.5 bg-white border border-gray-200 rounded text-[11px] outline-none focus:border-[#B8860B]"
                   >
                     <option value="">Select a return...</option>
                     {returns.filter(r => r.status === 'Submitted' || r.status === 'Filed').map(r => (
@@ -379,7 +379,7 @@ const VATServices: React.FC = () => {
                     />
                     <label 
                       htmlFor="file-upload"
-                      className={`flex items-center justify-center gap-2 w-full px-4 py-2 border-2 border-dashed rounded cursor-pointer transition-all ${
+                      className={`flex items-center justify-center gap-2 w-full px-4 py-2.5 border-2 border-dashed rounded cursor-pointer transition-all ${
                         !selectedReturnId || uploading
                           ? 'bg-gray-50 border-gray-200 cursor-not-allowed text-gray-400'
                           : 'bg-white border-[#B8860B] text-[#B8860B] hover:bg-orange-50'
@@ -400,8 +400,8 @@ const VATServices: React.FC = () => {
               <div className="px-4 py-3 border-b border-gray-100 bg-gray-50/50">
                 <h2 className="text-[10px] font-bold text-gray-900 uppercase tracking-wider">Uploaded Documents</h2>
               </div>
-              <div className="overflow-x-auto">
-                <table className="w-full">
+              <div className="overflow-x-auto scrollbar-hide">
+                <table className="w-full min-w-[700px]">
                   <thead>
                     <tr className="text-left text-[10px] font-bold text-gray-400 uppercase tracking-wider border-b border-gray-100">
                       <th className="py-3 px-4">Document Name</th>

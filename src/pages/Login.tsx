@@ -60,21 +60,21 @@ const Login: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen bg-[#0A192F] flex flex-col items-center justify-center p-4">
-      <div className="mb-8 flex items-center gap-3">
-        <div className="w-12 h-12 bg-[#B8860B] rounded-xl flex items-center justify-center font-bold text-2xl text-white shadow-lg shadow-[#B8860B]/20">
+    <div className="min-h-screen bg-[#0A192F] flex flex-col items-center justify-center p-4 sm:p-6 overflow-y-auto">
+      <div className="mb-6 sm:mb-8 flex items-center gap-3">
+        <div className="w-10 h-10 sm:w-12 sm:h-12 bg-[#B8860B] rounded-xl flex items-center justify-center font-bold text-xl sm:text-2xl text-white shadow-lg shadow-[#B8860B]/20">
           E
         </div>
-        <h1 className="text-3xl font-bold text-white tracking-tight">EmaraTax Authority</h1>
+        <h1 className="text-2xl sm:text-3xl font-bold text-white tracking-tight">EmaraTax Authority</h1>
       </div>
 
       <div className="w-full max-w-md bg-white rounded-2xl shadow-2xl overflow-hidden">
-        <div className="p-8">
-          <div className="text-center mb-8">
-            <h2 className="text-2xl font-bold text-gray-900 mb-2">
+        <div className="p-6 sm:p-8">
+          <div className="text-center mb-6 sm:mb-8">
+            <h2 className="text-xl sm:text-2xl font-bold text-gray-900 mb-2">
               {isLogin ? 'Welcome to the Portal' : 'Create Official Account'}
             </h2>
-            <p className="text-gray-500">
+            <p className="text-sm text-gray-500">
               {isLogin ? 'Sign in to access your tax authority dashboard' : 'Register your credentials for portal access'}
             </p>
           </div>

@@ -18,6 +18,8 @@ import Payments from './pages/Payments';
 import TaxablePerson from './pages/TaxablePerson';
 import OtherServices from './pages/OtherServices';
 import VATReturnDetail from './pages/VATReturnDetail';
+import PaymentSelection from './pages/PaymentSelection';
+import PaymentGateway from './pages/PaymentGateway';
 import { ExciseTax, UserAuthorization, Audit, EInvoicing } from './pages/Placeholders';
 import Layout from './components/Layout';
 import RoleGuard from './components/RoleGuard';
@@ -51,6 +53,8 @@ export default function App() {
                     <Route path="/vat/reporting" element={<VATReporting />} />
                     <Route path="/vat/new" element={<NewVATReturn />} />
                     <Route path="/vat/:id" element={<VATReturnDetail />} />
+                    <Route path="/payment-selection" element={<PaymentSelection />} />
+                    <Route path="/payment-gateway" element={<PaymentGateway />} />
                     <Route 
                       path="/corporate-tax" 
                       element={

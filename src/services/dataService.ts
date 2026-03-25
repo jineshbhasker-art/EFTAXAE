@@ -39,6 +39,26 @@ export const dataService = {
     return response.json();
   },
 
+  async savePayment(data: { type: string, amount: number, status: string, dueDate: string }) {
+    const response = await fetch('/api/payments', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data)
+    });
+    if (!response.ok) throw new Error('Failed to create payment');
+    return response.json();
+  },
+
+  async updatePaymentStatus(id: string, status: string) {
+    const response = await fetch(`/api/payments/${id}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ status })
+    });
+    if (!response.ok) throw new Error('Failed to update payment status');
+    return response.json();
+  },
+
   async getCorporateTaxReturns(): Promise<CorporateTaxReturn[]> {
     const response = await fetch('/api/corporate_tax_returns');
     if (!response.ok) return [];
@@ -113,5 +133,15 @@ export const dataService = {
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
+  },
+
+  async sendReceipt(data: { amount: number, reference: string, email: string }) {
+    const response = await fetch('/api/send-receipt', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data)
+    });
+    if (!response.ok) throw new Error('Failed to send receipt');
+    return response.json();
   }
 };
