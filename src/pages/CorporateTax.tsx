@@ -125,7 +125,7 @@ const CorporateTax: React.FC = () => {
         <div className="p-5 sm:p-6 border-b border-gray-50">
           <h2 className="text-base sm:text-lg font-bold text-gray-900">Active Registrations</h2>
         </div>
-        <div className="p-0 sm:p-6 overflow-x-auto scrollbar-hide">
+        <div className="p-0 sm:p-6 overflow-x-auto scrollbar-hide no-scrollbar">
           <table className="w-full min-w-[600px]">
             <thead>
               <tr className="text-left text-[10px] sm:text-xs font-bold text-gray-400 uppercase tracking-wider bg-gray-50 sm:bg-transparent">
@@ -173,7 +173,7 @@ const CorporateTax: React.FC = () => {
           <h2 className="text-base sm:text-lg font-bold text-gray-900">Recent Corporate Tax Returns</h2>
           <button className="text-xs sm:text-sm font-bold text-[#B8860B] hover:underline">View All</button>
         </div>
-        <div className="p-0 sm:p-6 overflow-x-auto scrollbar-hide">
+        <div className="p-0 sm:p-6 overflow-x-auto scrollbar-hide no-scrollbar">
           {loading ? (
             <div className="py-8 text-center text-gray-500 text-sm">Loading returns...</div>
           ) : recentReturns.length === 0 ? (

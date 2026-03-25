@@ -82,7 +82,7 @@ const VATReturnDetail: React.FC = () => {
   return (
     <div className="flex flex-col min-h-full bg-[#F8F9FA]">
       {/* Breadcrumbs */}
-      <div className="px-4 sm:px-6 py-2 flex items-center gap-2 text-[10px] font-bold text-gray-500 uppercase tracking-wider bg-white border-b border-gray-100 overflow-x-auto no-scrollbar whitespace-nowrap shrink-0">
+      <div className="px-4 sm:px-6 py-2 flex items-center gap-2 text-[10px] font-bold text-gray-500 uppercase tracking-wider bg-white border-b border-gray-100 overflow-x-auto scrollbar-hide no-scrollbar whitespace-nowrap shrink-0">
         <span className="cursor-pointer hover:text-[#B8860B]" onClick={() => navigate('/')}>Home</span>
         <ChevronRight size={10} className="shrink-0" />
         <span className="cursor-pointer hover:text-[#B8860B]" onClick={() => navigate('/vat')}>VAT</span>
@@ -156,7 +156,7 @@ const VATReturnDetail: React.FC = () => {
         </div>
 
         <div className="bg-white rounded border border-gray-200 shadow-sm overflow-hidden">
-          <div className="flex border-b border-gray-100 bg-gray-50/50 overflow-x-auto no-scrollbar scrollbar-hide shrink-0">
+          <div className="flex border-b border-gray-100 bg-gray-50/50 overflow-x-auto scrollbar-hide no-scrollbar shrink-0">
             {sections.map((s) => (
               <button
                 key={s.id}
@@ -181,7 +181,7 @@ const VATReturnDetail: React.FC = () => {
                   <p>Details of all supplies of goods and services made during this tax period.</p>
                 </div>
                 
-                <div className="overflow-x-auto scrollbar-hide">
+                <div className="overflow-x-auto scrollbar-hide no-scrollbar">
                   <table className="w-full text-[11px] min-w-[600px]">
                     <thead>
                       <tr className="text-left font-bold text-gray-400 uppercase tracking-wider border-b border-gray-100">
@@ -238,7 +238,7 @@ const VATReturnDetail: React.FC = () => {
                   <p>Details of all expenses and inputs incurred during this tax period on which you are claiming VAT recovery.</p>
                 </div>
                 
-                <div className="overflow-x-auto scrollbar-hide">
+                <div className="overflow-x-auto scrollbar-hide no-scrollbar">
                   <table className="w-full text-[11px] min-w-[600px]">
                     <thead>
                       <tr className="text-left font-bold text-gray-400 uppercase tracking-wider border-b border-gray-100">

@@ -94,7 +94,7 @@ const VATReporting: React.FC = () => {
   return (
     <div className="flex flex-col min-h-full bg-[#F8F9FA]">
       {/* Breadcrumbs */}
-      <div className="px-4 sm:px-6 py-2 flex items-center gap-2 text-[10px] font-bold text-gray-500 uppercase tracking-wider bg-white border-b border-gray-100 overflow-x-auto no-scrollbar whitespace-nowrap shrink-0">
+      <div className="px-4 sm:px-6 py-2 flex items-center gap-2 text-[10px] font-bold text-gray-500 uppercase tracking-wider bg-white border-b border-gray-100 overflow-x-auto scrollbar-hide no-scrollbar whitespace-nowrap shrink-0">
         <span className="cursor-pointer hover:text-[#B8860B]" onClick={() => navigate('/')}>Home</span>
         <ChevronRight size={10} className="shrink-0" />
         <span className="cursor-pointer hover:text-[#B8860B]" onClick={() => navigate('/vat')}>VAT</span>
@@ -229,7 +229,7 @@ const VATReporting: React.FC = () => {
           <div className="px-4 py-3 border-b border-gray-100 bg-gray-50/50">
             <h3 className="text-[11px] font-bold text-[#0A192F] uppercase">Recent VAT Activity Summary</h3>
           </div>
-          <div className="overflow-x-auto scrollbar-hide">
+          <div className="overflow-x-auto scrollbar-hide no-scrollbar">
             <table className="w-full text-[10px] min-w-[700px]">
               <thead>
                 <tr className="bg-gray-50 text-left border-b border-gray-100">
