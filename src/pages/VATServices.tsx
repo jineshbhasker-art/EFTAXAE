@@ -139,7 +139,7 @@ const VATServices: React.FC = () => {
   return (
     <div className="flex flex-col h-full bg-[#F8F9FA]">
       {/* Breadcrumbs */}
-      <div className="px-4 sm:px-6 py-3 flex items-center gap-2 text-[10px] font-bold text-gray-500 uppercase tracking-wider overflow-x-auto no-scrollbar whitespace-nowrap shrink-0">
+      <div className="px-4 sm:px-6 py-3 flex items-center gap-2 text-[10px] font-bold text-gray-500 uppercase tracking-wider overflow-x-auto scrollbar-hide no-scrollbar whitespace-nowrap shrink-0">
         <span className="cursor-pointer hover:text-[#B8860B]" onClick={() => navigate('/')}>Home</span>
         <ChevronRight size={10} className="shrink-0" />
         <span className="text-[#B8860B]">VAT Services</span>
@@ -151,7 +151,7 @@ const VATServices: React.FC = () => {
         </div>
 
         {/* Main Tabs */}
-        <div className="flex border-b border-gray-200 overflow-x-auto no-scrollbar scrollbar-hide shrink-0">
+        <div className="flex border-b border-gray-200 overflow-x-auto scrollbar-hide no-scrollbar shrink-0">
           {mainTabs.map((tab) => (
             <button
               key={tab}
@@ -176,7 +176,7 @@ const VATServices: React.FC = () => {
         {activeTab === 'VAT Returns' && (
           <>
             {/* Sub Tabs */}
-            <div className="flex gap-3 sm:gap-4 overflow-x-auto no-scrollbar scrollbar-hide pb-1 shrink-0">
+            <div className="flex gap-3 sm:gap-4 overflow-x-auto scrollbar-hide no-scrollbar pb-1 shrink-0">
               {subTabs.map((tab) => (
                 <button
                   key={tab}
@@ -236,7 +236,7 @@ const VATServices: React.FC = () => {
                 </div>
               </div>
 
-              <div className="overflow-x-auto scrollbar-hide">
+              <div className="overflow-x-auto scrollbar-hide no-scrollbar">
                 <table className="w-full min-w-[900px]">
                   <thead>
                     <tr className="text-left text-[10px] font-bold text-gray-400 uppercase tracking-wider border-b border-gray-100">
@@ -400,7 +400,7 @@ const VATServices: React.FC = () => {
               <div className="px-4 py-3 border-b border-gray-100 bg-gray-50/50">
                 <h2 className="text-[10px] font-bold text-gray-900 uppercase tracking-wider">Uploaded Documents</h2>
               </div>
-              <div className="overflow-x-auto scrollbar-hide">
+              <div className="overflow-x-auto scrollbar-hide no-scrollbar">
                 <table className="w-full min-w-[700px]">
                   <thead>
                     <tr className="text-left text-[10px] font-bold text-gray-400 uppercase tracking-wider border-b border-gray-100">

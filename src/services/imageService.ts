@@ -37,15 +37,19 @@ export const generateTaxImage = async (prompt: string) => {
     // Fallback if no image data found
     return `https://picsum.photos/seed/${encodeURIComponent(prompt)}/1920/1080?blur=1`;
   } catch (error: any) {
-    console.error("Error generating image:", error);
-    
     // Check for 429 (Quota Exceeded) or other errors
-    if (error?.status === 429 || error?.message?.includes('quota') || error?.message?.includes('429')) {
-      console.warn("Quota exceeded for AI image generation. Using high-quality placeholder fallback.");
-      // Return a high-quality placeholder with a seed based on the prompt for consistency
-      return `https://picsum.photos/seed/${encodeURIComponent(prompt)}/1920/1080?blur=1`;
+    const isQuotaError = error?.status === 429 || 
+                        error?.message?.includes('quota') || 
+                        error?.message?.includes('429') ||
+                        (typeof error === 'string' && error.includes('429'));
+
+    if (isQuotaError) {
+      console.warn("AI Image Generation: Quota exceeded. Using high-quality placeholder fallback.");
+    } else {
+      console.error("Error generating image:", error);
     }
     
+    // Return a high-quality placeholder with a seed based on the prompt for consistency
     return `https://picsum.photos/seed/${encodeURIComponent(prompt)}/1920/1080?blur=1`;
   }
 };

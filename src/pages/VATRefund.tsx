@@ -40,7 +40,7 @@ const VATRefund: React.FC = () => {
   return (
     <div className="flex flex-col h-full bg-[#F8F9FA]">
       {/* Breadcrumbs */}
-      <div className="px-4 sm:px-6 py-3 flex items-center gap-2 text-[10px] font-bold text-gray-500 uppercase tracking-wider overflow-x-auto no-scrollbar whitespace-nowrap shrink-0">
+      <div className="px-4 sm:px-6 py-3 flex items-center gap-2 text-[10px] font-bold text-gray-500 uppercase tracking-wider overflow-x-auto scrollbar-hide no-scrollbar whitespace-nowrap shrink-0">
         <span className="cursor-pointer hover:text-[#B8860B]" onClick={() => navigate('/')}>Home</span>
         <ChevronRight size={10} className="shrink-0" />
         <span className="cursor-pointer hover:text-[#B8860B]" onClick={() => navigate('/vat')}>VAT</span>
@@ -60,7 +60,7 @@ const VATRefund: React.FC = () => {
         </div>
 
         {/* Tabs */}
-        <div className="flex border-b border-gray-200 overflow-x-auto no-scrollbar scrollbar-hide shrink-0">
+        <div className="flex border-b border-gray-200 overflow-x-auto scrollbar-hide no-scrollbar shrink-0">
           {['Refund Requests', 'Refund History'].map((tab) => (
             <button
               key={tab}
@@ -101,7 +101,7 @@ const VATRefund: React.FC = () => {
             </button>
           </div>
 
-          <div className="overflow-x-auto scrollbar-hide">
+          <div className="overflow-x-auto scrollbar-hide no-scrollbar">
             <table className="w-full min-w-[800px]">
               <thead>
                 <tr className="text-left text-[10px] font-bold text-gray-400 uppercase tracking-wider border-b border-gray-100">

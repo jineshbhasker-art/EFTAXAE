@@ -32,6 +32,22 @@
   .btn-primary {
     @apply px-6 py-3 bg-brand-primary text-white rounded-xl font-bold hover:bg-black transition-all shadow-lg flex items-center justify-center gap-2;
   }
+
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+  }
+  .scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+  .no-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
 }
 
 /* Custom scrollbar for a more professional look */

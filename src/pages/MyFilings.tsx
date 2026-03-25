@@ -95,7 +95,7 @@ const MyFilings: React.FC = () => {
   return (
     <div className="flex flex-col min-h-full bg-[#F8F9FA]">
       {/* Breadcrumbs */}
-      <div className="px-4 sm:px-6 py-2 flex items-center gap-2 text-[9px] sm:text-[10px] font-bold text-gray-500 uppercase tracking-wider bg-white border-b border-gray-100 overflow-x-auto whitespace-nowrap scrollbar-hide">
+      <div className="px-4 sm:px-6 py-2 flex items-center gap-2 text-[9px] sm:text-[10px] font-bold text-gray-500 uppercase tracking-wider bg-white border-b border-gray-100 overflow-x-auto whitespace-nowrap scrollbar-hide no-scrollbar">
         <span className="cursor-pointer hover:text-[#B8860B] shrink-0" onClick={() => navigate('/')}>Home</span>
         <ChevronRight size={10} className="shrink-0" />
         <span className="cursor-pointer hover:text-[#B8860B] shrink-0" onClick={() => navigate('/')}>Entity Overview</span>
@@ -109,7 +109,7 @@ const MyFilings: React.FC = () => {
         <h2 className="text-xs sm:text-sm font-bold text-[#0A192F] uppercase">My Filings</h2>
 
         <div className="bg-white border border-gray-200 rounded shadow-sm overflow-hidden">
-          <div className="flex border-b border-gray-100 overflow-x-auto whitespace-nowrap scrollbar-hide">
+          <div className="flex border-b border-gray-100 overflow-x-auto whitespace-nowrap scrollbar-hide no-scrollbar">
             {['Filing Details', 'Return Clarifications', 'Reference Screenshots'].map((tab) => (
               <button
                 key={tab}
@@ -175,7 +175,7 @@ const MyFilings: React.FC = () => {
                   </div>
                 </div>
 
-                <div className="overflow-x-auto">
+                <div className="overflow-x-auto scrollbar-hide no-scrollbar">
                   <table className="w-full text-[9px] min-w-[1000px]">
                     <thead>
                       <tr className="bg-gray-50 text-left border-b border-gray-100">
@@ -357,7 +357,7 @@ const MyFilings: React.FC = () => {
                     />
                   </div>
                 </div>
-                <div className="overflow-x-auto">
+                <div className="overflow-x-auto scrollbar-hide no-scrollbar">
                   <table className="w-full text-[9px]">
                     <thead>
                       <tr className="bg-gray-50 text-left border-b border-gray-100">
