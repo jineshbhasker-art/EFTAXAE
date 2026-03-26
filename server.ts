@@ -80,6 +80,7 @@ db.exec(`
     subject TEXT,
     fromName TEXT,
     date TEXT,
+    type TEXT,
     status TEXT,
     content TEXT,
     createdAt TEXT,
@@ -357,16 +358,17 @@ async function seedDatabase() {
 
     // Create Correspondence
     const correspondence = [
-      { id: `msg-1-${userId}`, userId, subject: 'VAT Registration Approved', fromName: 'FTA Admin', date: '2024-01-12', status: 'Read', content: `Your VAT registration for ${entityName} has been approved. Your TRN is ${trnVat}.` },
-      { id: `msg-2-${userId}`, userId, subject: 'Corporate Tax Deadline Reminder', fromName: 'Tax System', date: '2024-08-01', status: 'Unread', content: 'This is a reminder that your Corporate Tax return for 2023 is due by 30 Sep 2024.' },
-      { id: `msg-3-${userId}`, userId, subject: 'Tax Certificate Issued', fromName: 'FTA Admin', date: '2024-05-15', status: 'Read', content: 'Your Tax Residency Certificate has been issued and is available for download.' }
+      { id: `msg-1-${userId}`, userId, subject: 'VAT Registration Approved', fromName: 'FTA Admin', date: '2024-01-12', type: 'Message', status: 'Read', content: `Your VAT registration for ${entityName} has been approved. Your TRN is ${trnVat}.` },
+      { id: `msg-2-${userId}`, userId, subject: 'Corporate Tax Deadline Reminder', fromName: 'Tax System', date: '2024-08-01', type: 'Message', status: 'Unread', content: 'This is a reminder that your Corporate Tax return for 2023 is due by 30 Sep 2024.' },
+      { id: `msg-3-${userId}`, userId, subject: 'Tax Certificate Issued', fromName: 'FTA Admin', date: '2024-05-15', type: 'Certificate', status: 'Read', content: 'Your Tax Residency Certificate has been issued and is available for download.' },
+      { id: `msg-4-${userId}`, userId, subject: 'VAT Audit Notification', fromName: 'Audit Dept', date: '2024-11-20', type: 'Audit', status: 'Unread', content: `Your VAT return for period Q3 2024 has been selected for a routine audit. Please provide supporting documents.` }
     ];
     const insertMsg = db.prepare(`
-      INSERT INTO correspondence (id, userId, subject, fromName, date, status, content, createdAt)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+      INSERT INTO correspondence (id, userId, subject, fromName, date, type, status, content, createdAt)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
     `);
     for (const m of correspondence) {
-      insertMsg.run(m.id, m.userId, m.subject, m.fromName, m.date, m.status, m.content, now);
+      insertMsg.run(m.id, m.userId, m.subject, m.fromName, m.date, m.type, m.status, m.content, now);
     }
   };
 
@@ -474,7 +476,12 @@ async function startServer() {
   // VAT Return Routes
   app.get('/api/vat_returns', authenticateToken, (req: any, res) => {
     try {
-      const returns = db.prepare('SELECT * FROM vat_returns WHERE userId = ? ORDER BY updatedAt DESC').all(req.user.id);
+      let returns;
+      if (req.user.role === 'admin') {
+        returns = db.prepare('SELECT * FROM vat_returns ORDER BY updatedAt DESC').all();
+      } else {
+        returns = db.prepare('SELECT * FROM vat_returns WHERE userId = ? ORDER BY updatedAt DESC').all(req.user.id);
+      }
       res.json(returns.map((r: any) => ({ 
         ...r, 
         formData: r.formData ? JSON.parse(r.formData) : null 
@@ -486,7 +493,12 @@ async function startServer() {
   });
 
   app.get('/api/vat_returns/:id', authenticateToken, (req: any, res) => {
-    const r = db.prepare('SELECT * FROM vat_returns WHERE id = ? AND userId = ?').get(req.params.id, req.user.id) as any;
+    let r;
+    if (req.user.role === 'admin') {
+      r = db.prepare('SELECT * FROM vat_returns WHERE id = ?').get(req.params.id) as any;
+    } else {
+      r = db.prepare('SELECT * FROM vat_returns WHERE id = ? AND userId = ?').get(req.params.id, req.user.id) as any;
+    }
     if (!r) return res.sendStatus(404);
     res.json({ 
       ...r, 
@@ -540,7 +552,12 @@ async function startServer() {
 
   // Payment Routes
   app.get('/api/payments', authenticateToken, (req: any, res) => {
-    const payments = db.prepare('SELECT * FROM payments WHERE userId = ? ORDER BY createdAt DESC').all(req.user.id);
+    let payments;
+    if (req.user.role === 'admin') {
+      payments = db.prepare('SELECT * FROM payments ORDER BY createdAt DESC').all();
+    } else {
+      payments = db.prepare('SELECT * FROM payments WHERE userId = ? ORDER BY createdAt DESC').all(req.user.id);
+    }
     res.json(payments);
   });
 
@@ -576,7 +593,12 @@ async function startServer() {
   // Corporate Tax Routes
   app.get('/api/corporate_tax_returns', authenticateToken, (req: any, res) => {
     try {
-      const returns = db.prepare('SELECT * FROM corporate_tax_returns WHERE userId = ? ORDER BY updatedAt DESC').all(req.user.id);
+      let returns;
+      if (req.user.role === 'admin') {
+        returns = db.prepare('SELECT * FROM corporate_tax_returns ORDER BY updatedAt DESC').all();
+      } else {
+        returns = db.prepare('SELECT * FROM corporate_tax_returns WHERE userId = ? ORDER BY updatedAt DESC').all(req.user.id);
+      }
       res.json(returns.map((r: any) => ({ 
         ...r, 
         formData: r.formData ? JSON.parse(r.formData) : null 
@@ -609,34 +631,64 @@ async function startServer() {
 
   // Correspondence Routes
   app.get('/api/correspondence', authenticateToken, (req: any, res) => {
-    const correspondence = db.prepare('SELECT * FROM correspondence WHERE userId = ? ORDER BY date DESC').all(req.user.id);
+    let correspondence;
+    if (req.user.role === 'admin') {
+      correspondence = db.prepare('SELECT * FROM correspondence ORDER BY date DESC').all();
+    } else {
+      correspondence = db.prepare('SELECT * FROM correspondence WHERE userId = ? ORDER BY date DESC').all(req.user.id);
+    }
     res.json(correspondence);
   });
 
   app.get('/api/registrations', authenticateToken, (req: any, res) => {
-    const registrations = db.prepare('SELECT * FROM registrations WHERE userId = ? ORDER BY createdAt DESC').all(req.user.id);
+    let registrations;
+    if (req.user.role === 'admin') {
+      registrations = db.prepare('SELECT * FROM registrations ORDER BY createdAt DESC').all();
+    } else {
+      registrations = db.prepare('SELECT * FROM registrations WHERE userId = ? ORDER BY createdAt DESC').all(req.user.id);
+    }
     res.json(registrations);
   });
 
   // Document Routes
   app.get('/api/documents', authenticateToken, (req: any, res) => {
-    const docs = db.prepare(`
-      SELECT d.id, d.userId, d.vatReturnId, d.fileName, d.fileType, d.createdAt, v.vatRef 
-      FROM documents d
-      JOIN vat_returns v ON d.vatReturnId = v.id
-      WHERE d.userId = ? 
-      ORDER BY d.createdAt DESC
-    `).all(req.user.id);
+    let docs;
+    if (req.user.role === 'admin') {
+      docs = db.prepare(`
+        SELECT d.id, d.userId, d.vatReturnId, d.fileName, d.fileType, d.createdAt, v.vatRef 
+        FROM documents d
+        JOIN vat_returns v ON d.vatReturnId = v.id
+        ORDER BY d.createdAt DESC
+      `).all();
+    } else {
+      docs = db.prepare(`
+        SELECT d.id, d.userId, d.vatReturnId, d.fileName, d.fileType, d.createdAt, v.vatRef 
+        FROM documents d
+        JOIN vat_returns v ON d.vatReturnId = v.id
+        WHERE d.userId = ? 
+        ORDER BY d.createdAt DESC
+      `).all(req.user.id);
+    }
     res.json(docs);
   });
 
   app.get('/api/documents/:vatReturnId', authenticateToken, (req: any, res) => {
-    const docs = db.prepare('SELECT id, userId, vatReturnId, fileName, fileType, createdAt FROM documents WHERE userId = ? AND vatReturnId = ?').all(req.user.id, req.params.vatReturnId);
+    let docs;
+    if (req.user.role === 'admin') {
+      docs = db.prepare('SELECT id, userId, vatReturnId, fileName, fileType, createdAt FROM documents WHERE vatReturnId = ?').all(req.params.vatReturnId);
+    } else {
+      docs = db.prepare('SELECT id, userId, vatReturnId, fileName, fileType, createdAt FROM documents WHERE userId = ? AND vatReturnId = ?').all(req.user.id, req.params.vatReturnId);
+    }
     res.json(docs);
   });
 
   app.get('/api/documents/download/:id', authenticateToken, (req: any, res) => {
-    const doc = db.prepare('SELECT * FROM documents WHERE id = ? AND userId = ?').get(req.params.id, req.user.id) as any;
+    let doc;
+    if (req.user.role === 'admin') {
+      doc = db.prepare('SELECT * FROM documents WHERE id = ?').get(req.params.id) as any;
+    } else {
+      doc = db.prepare('SELECT * FROM documents WHERE id = ? AND userId = ?').get(req.params.id, req.user.id) as any;
+    }
     if (!doc) return res.sendStatus(404);
     res.json(doc);
   });
