@@ -160,11 +160,33 @@ const Login: React.FC = () => {
               </div>
             </div>
 
-            <div className="p-4 bg-blue-50 rounded-xl border border-blue-100 flex gap-3">
-              <Shield className="text-blue-600 shrink-0" size={20} />
-              <p className="text-[11px] text-blue-700 leading-relaxed">
-                Use your official credentials. For first time setup, use <strong>admin</strong> / <strong>admin</strong> to access the dashboard.
-              </p>
+            <div className="p-4 bg-blue-50 rounded-xl border border-blue-100 space-y-3">
+              <div className="flex gap-3">
+                <Shield className="text-blue-600 shrink-0" size={20} />
+                <p className="text-[11px] text-blue-700 font-bold uppercase tracking-wider">Demo Accounts Available</p>
+              </div>
+              <div className="grid grid-cols-2 gap-2 text-[10px] text-blue-800">
+                <div className="bg-white/50 p-2 rounded border border-blue-100">
+                  <p className="font-bold">Admin Portal</p>
+                  <p>User: admin</p>
+                  <p>Pass: admin</p>
+                </div>
+                <div className="bg-white/50 p-2 rounded border border-blue-100">
+                  <p className="font-bold">Company 1</p>
+                  <p>User: company1</p>
+                  <p>Pass: password123</p>
+                </div>
+                <div className="bg-white/50 p-2 rounded border border-blue-100">
+                  <p className="font-bold">Company 2</p>
+                  <p>User: company2</p>
+                  <p>Pass: password123</p>
+                </div>
+                <div className="bg-white/50 p-2 rounded border border-blue-100">
+                  <p className="font-bold">Company 3</p>
+                  <p>User: company3</p>
+                  <p>Pass: password123</p>
+                </div>
+              </div>
             </div>
           </form>
         </div>

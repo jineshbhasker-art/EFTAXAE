@@ -113,10 +113,16 @@ db.exec(`
 
 // Seed Database
 async function seedDatabase() {
-  const userCount = db.prepare('SELECT COUNT(*) as count FROM users').get() as any;
-  if (userCount.count > 0) return;
+  console.log('Clearing and seeding database with mock data...');
+  
+  // Clear existing data
+  db.prepare('DELETE FROM users').run();
+  db.prepare('DELETE FROM registrations').run();
+  db.prepare('DELETE FROM vat_returns').run();
+  db.prepare('DELETE FROM corporate_tax_returns').run();
+  db.prepare('DELETE FROM payments').run();
+  db.prepare('DELETE FROM correspondence').run();
 
-  console.log('Seeding database with mock data...');
   const hashedPassword = await bcrypt.hash('password123', 10);
   const adminPassword = await bcrypt.hash('admin', 10);
   const now = new Date().toISOString();
@@ -125,20 +131,23 @@ async function seedDatabase() {
   const users = [
     { id: 'admin-id', username: 'admin', email: 'jinzstallionz@gmail.com', password: adminPassword, displayName: 'MOHAMMAD SHAFIULALAM VEGETABLES AND FRUITS TRADING L.L.C', role: 'admin' },
     { id: 'user-1', username: 'corporate_user', email: 'corporate@example.com', password: hashedPassword, displayName: 'Global Trading LLC', role: 'corporate' },
-    { id: 'user-2', username: 'person_user', email: 'person@example.com', password: hashedPassword, displayName: 'John Doe', role: 'person' }
+    { id: 'user-2', username: 'person_user', email: 'person@example.com', password: hashedPassword, displayName: 'John Doe', role: 'person' },
+    { id: 'user-3', username: 'company1', email: 'company1@example.com', password: hashedPassword, displayName: 'Al-Futtaim Group LLC', role: 'corporate' },
+    { id: 'user-4', username: 'company2', email: 'company2@example.com', password: hashedPassword, displayName: 'Emirates Logistics Solutions', role: 'corporate' },
+    { id: 'user-5', username: 'company3', email: 'company3@example.com', password: hashedPassword, displayName: 'Dubai Tech Innovations', role: 'corporate' }
   ];
 
   const insertUser = db.prepare('INSERT INTO users (id, username, email, password, displayName, role, createdAt) VALUES (?, ?, ?, ?, ?, ?, ?)');
-  for (const u of users) {
-    insertUser.run(u.id, u.username, u.email, u.password, u.displayName, u.role, now);
-  }
-
+  
   // Helper to seed data for a user
-  const seedUserData = (userId: string, entityName: string) => {
+  const seedUserData = (userId: string, entityName: string, index: number) => {
+    const trnVat = `10023456789${index}003`;
+    const trnCt = `20098765432${index}001`;
+    
     // Create Registrations
     const registrations = [
-      { id: `reg-vat-${userId}`, userId, taxType: 'VAT', trn: '100234567890003', status: 'Active', effectiveDate: '2024-01-01', entityName },
-      { id: `reg-ct-${userId}`, userId, taxType: 'Corporate Tax', trn: '200987654321001', status: 'Active', effectiveDate: '2024-06-01', entityName }
+      { id: `reg-vat-${userId}`, userId, taxType: 'VAT', trn: trnVat, status: 'Active', effectiveDate: '2024-01-01', entityName },
+      { id: `reg-ct-${userId}`, userId, taxType: 'Corporate Tax', trn: trnCt, status: 'Active', effectiveDate: '2024-06-01', entityName }
     ];
     const insertReg = db.prepare('INSERT INTO registrations (id, userId, taxType, trn, status, effectiveDate, entityName, createdAt) VALUES (?, ?, ?, ?, ?, ?, ?, ?)');
     for (const r of registrations) {
@@ -186,15 +195,15 @@ async function seedDatabase() {
         userId, 
         status: 'Submitted', 
         period: '01/12/2025 - 28/02/2026', 
-        vatRef: '230010165962',
+        vatRef: `23001016596${index}`,
         periodFrom: '01/12/2025',
         periodTo: '28/02/2026',
         taxYearEnd: '28/02/2026',
-        totalSales: 3121416.78, 
-        totalVAT: 156070.84, 
-        totalExpenses: 2558941.13, 
-        totalRecoverableVAT: 127947.06, 
-        netVAT: 28123.78, 
+        totalSales: 3121416.78 + (index * 10000), 
+        totalVAT: (3121416.78 + (index * 10000)) * 0.05, 
+        totalExpenses: 2558941.13 + (index * 5000), 
+        totalRecoverableVAT: (2558941.13 + (index * 5000)) * 0.05, 
+        netVAT: (3121416.78 + (index * 10000)) * 0.05 - (2558941.13 + (index * 5000)) * 0.05, 
         dueDate: '30/03/2026', 
         filedAt: '2026-03-23T19:40:03Z', 
         formData: createVatFormData(
@@ -202,12 +211,12 @@ async function seedDatabase() {
           '01/12/2025', 
           '28/02/2026', 
           '28/02/2026', 
-          3121416.78, 
-          156070.84, 
-          2558941.13, 
-          127947.06, 
+          3121416.78 + (index * 10000), 
+          (3121416.78 + (index * 10000)) * 0.05, 
+          2558941.13 + (index * 5000), 
+          (2558941.13 + (index * 5000)) * 0.05, 
           '30/03/2026', 
-          '230010165962', 
+          `23001016596${index}`, 
           519580.13, 
           25979.01,
           2601836.65,
@@ -221,7 +230,7 @@ async function seedDatabase() {
         userId, 
         status: 'Submitted', 
         period: '01/09/2025 - 30/11/2025', 
-        vatRef: '230009650203',
+        vatRef: `23000965020${index}`,
         periodFrom: '01/09/2025',
         periodTo: '30/11/2025',
         taxYearEnd: '28/02/2026',
@@ -232,14 +241,14 @@ async function seedDatabase() {
         netVAT: 22298.81, 
         dueDate: '29/12/2025', 
         filedAt: '2025-12-25T10:00:00Z', 
-        formData: createVatFormData('01/09/2025 - 30/11/2025', '01/09/2025', '30/11/2025', '28/02/2026', 0, 0, 445976.20, 22298.81, '29/12/2025', '230009650203')
+        formData: createVatFormData('01/09/2025 - 30/11/2025', '01/09/2025', '30/11/2025', '28/02/2026', 0, 0, 445976.20, 22298.81, '29/12/2025', `23000965020${index}`)
       },
       { 
         id: `vat-img-3-${userId}`, 
         userId, 
         status: 'Submitted', 
         period: '01/06/2025 - 31/08/2025', 
-        vatRef: '230009007872',
+        vatRef: `23000900787${index}`,
         periodFrom: '01/06/2025',
         periodTo: '31/08/2025',
         taxYearEnd: '28/02/2026',
@@ -250,14 +259,14 @@ async function seedDatabase() {
         netVAT: 6162.28, 
         dueDate: '29/09/2025', 
         filedAt: '2025-09-26T10:00:00Z', 
-        formData: createVatFormData('01/06/2025 - 31/08/2025', '01/06/2025', '31/08/2025', '28/02/2026', 0, 0, 123245.60, 6162.28, '29/09/2025', '230009007872')
+        formData: createVatFormData('01/06/2025 - 31/08/2025', '01/06/2025', '31/08/2025', '28/02/2026', 0, 0, 123245.60, 6162.28, '29/09/2025', `23000900787${index}`)
       },
       { 
         id: `vat-img-4-${userId}`, 
         userId, 
         status: 'Submitted', 
         period: '01/03/2025 - 31/05/2025', 
-        vatRef: '230008349468',
+        vatRef: `23000834946${index}`,
         periodFrom: '01/03/2025',
         periodTo: '31/05/2025',
         taxYearEnd: '28/02/2026',
@@ -268,14 +277,14 @@ async function seedDatabase() {
         netVAT: 6646.98, 
         dueDate: '30/06/2025', 
         filedAt: '2025-06-24T10:00:00Z', 
-        formData: createVatFormData('01/03/2025 - 31/05/2025', '01/03/2025', '31/05/2025', '28/02/2026', 132939.60, 6646.98, 0, 0, '30/06/2025', '230008349468')
+        formData: createVatFormData('01/03/2025 - 31/05/2025', '01/03/2025', '31/05/2025', '28/02/2026', 132939.60, 6646.98, 0, 0, '30/06/2025', `23000834946${index}`)
       },
       { 
         id: `vat-img-5-${userId}`, 
         userId, 
         status: 'Submitted', 
         period: '01/12/2024 - 28/02/2025', 
-        vatRef: '230007923042',
+        vatRef: `23000792304${index}`,
         periodFrom: '01/12/2024',
         periodTo: '28/02/2025',
         taxYearEnd: '28/02/2025',
@@ -286,14 +295,14 @@ async function seedDatabase() {
         netVAT: 24989.01, 
         dueDate: '28/03/2025', 
         filedAt: '2025-03-25T10:00:00Z', 
-        formData: createVatFormData('01/12/2024 - 28/02/2025', '01/12/2024', '28/02/2025', '28/02/2025', 499780.20, 24989.01, 0, 0, '28/03/2025', '230007923042')
+        formData: createVatFormData('01/12/2024 - 28/02/2025', '01/12/2024', '28/02/2025', '28/02/2025', 499780.20, 24989.01, 0, 0, '28/03/2025', `23000792304${index}`)
       },
       { 
         id: `vat-img-6-${userId}`, 
         userId, 
         status: 'Overdue', 
         period: '01/09/2024 - 30/11/2024', 
-        vatRef: '230007123456',
+        vatRef: `23000712345${index}`,
         periodFrom: '01/09/2024',
         periodTo: '30/11/2024',
         taxYearEnd: '28/02/2025',
@@ -304,7 +313,7 @@ async function seedDatabase() {
         netVAT: 12500.00, 
         dueDate: '29/12/2024', 
         filedAt: null, 
-        formData: createVatFormData('01/09/2024 - 30/11/2024', '01/09/2024', '30/11/2024', '28/02/2025', 250000.00, 12500.00, 0, 0, '29/12/2024', '230007123456')
+        formData: createVatFormData('01/09/2024 - 30/11/2024', '01/09/2024', '30/11/2024', '28/02/2025', 250000.00, 12500.00, 0, 0, '29/12/2024', `23000712345${index}`)
       }
     ];
     const insertVAT = db.prepare(`
@@ -317,7 +326,7 @@ async function seedDatabase() {
 
     // Create Corporate Tax Returns
     const ctReturns = [
-      { id: `ct-1-${userId}`, userId, status: 'Submitted', period: '2023', netTax: 45000, dueDate: '2024-09-30', filedAt: '2024-08-15', formData: { taxableIncome: 500000 } },
+      { id: `ct-1-${userId}`, userId, status: 'Submitted', period: '2023', netTax: 45000 + (index * 1000), dueDate: '2024-09-30', filedAt: '2024-08-15', formData: { taxableIncome: 500000 + (index * 10000) } },
       { id: `ct-2-${userId}`, userId, status: 'Draft', period: '2024', netTax: 0, dueDate: '2025-09-30', filedAt: null, formData: { taxableIncome: 0 } }
     ];
     const insertCT = db.prepare(`
@@ -330,13 +339,13 @@ async function seedDatabase() {
 
     // Create Payments
     const payments = [
-      { id: `pay-1-${userId}`, userId, type: 'VAT Payment', amount: 28123.78, status: 'Outstanding', dueDate: '30/03/2026', paidAt: null },
+      { id: `pay-1-${userId}`, userId, type: 'VAT Payment', amount: 28123.78 + (index * 100), status: 'Outstanding', dueDate: '30/03/2026', paidAt: null },
       { id: `pay-2-${userId}`, userId, type: 'VAT Payment', amount: 22298.81, status: 'Paid', dueDate: '29/12/2025', paidAt: '2025-12-27' },
       { id: `pay-3-${userId}`, userId, type: 'VAT Payment', amount: 6162.28, status: 'Paid', dueDate: '29/09/2025', paidAt: '2025-09-25' },
       { id: `pay-4-${userId}`, userId, type: 'VAT Payment', amount: 6646.98, status: 'Paid', dueDate: '30/06/2025', paidAt: '2025-06-28' },
       { id: `pay-5-${userId}`, userId, type: 'VAT Payment', amount: 24989.01, status: 'Paid', dueDate: '28/03/2025', paidAt: '2025-03-26' },
       { id: `pay-6-${userId}`, userId, type: 'VAT Payment', amount: 12500.00, status: 'Outstanding', dueDate: '29/12/2024', paidAt: null },
-      { id: `pay-ct-1-${userId}`, userId, type: 'Corporate Tax', amount: 45000, status: 'Outstanding', dueDate: '30/09/2024', paidAt: null }
+      { id: `pay-ct-1-${userId}`, userId, type: 'Corporate Tax', amount: 45000 + (index * 1000), status: 'Outstanding', dueDate: '30/09/2024', paidAt: null }
     ];
     const insertPayment = db.prepare(`
       INSERT INTO payments (id, userId, type, amount, status, dueDate, paidAt, createdAt)
@@ -348,7 +357,7 @@ async function seedDatabase() {
 
     // Create Correspondence
     const correspondence = [
-      { id: `msg-1-${userId}`, userId, subject: 'VAT Registration Approved', fromName: 'FTA Admin', date: '2024-01-12', status: 'Read', content: 'Your VAT registration has been approved. Your TRN is 100234567890003.' },
+      { id: `msg-1-${userId}`, userId, subject: 'VAT Registration Approved', fromName: 'FTA Admin', date: '2024-01-12', status: 'Read', content: `Your VAT registration for ${entityName} has been approved. Your TRN is ${trnVat}.` },
       { id: `msg-2-${userId}`, userId, subject: 'Corporate Tax Deadline Reminder', fromName: 'Tax System', date: '2024-08-01', status: 'Unread', content: 'This is a reminder that your Corporate Tax return for 2023 is due by 30 Sep 2024.' },
       { id: `msg-3-${userId}`, userId, subject: 'Tax Certificate Issued', fromName: 'FTA Admin', date: '2024-05-15', status: 'Read', content: 'Your Tax Residency Certificate has been issued and is available for download.' }
     ];
@@ -361,9 +370,11 @@ async function seedDatabase() {
     }
   };
 
-  seedUserData('admin-id', 'MOHAMMAD SHAFIULALAM VEGETABLES AND FRUITS TRADING L.L.C');
-  seedUserData('user-1', 'Global Trading LLC');
-  seedUserData('user-2', 'John Doe');
+  for (let i = 0; i < users.length; i++) {
+    const u = users[i];
+    insertUser.run(u.id, u.username, u.email, u.password, u.displayName, u.role, now);
+    seedUserData(u.id, u.displayName, i);
+  }
 
   console.log('Database seeded successfully.');
 }
