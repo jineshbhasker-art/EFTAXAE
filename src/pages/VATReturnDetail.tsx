@@ -368,21 +368,21 @@ const VATReturnDetail: React.FC = () => {
                           <div className="p-2 bg-gray-50 rounded group-hover:bg-[#B8860B]/10 transition-colors">
                             <FileText size={24} className="text-gray-400 group-hover:text-[#B8860B]" />
                           </div>
-                          <button 
-                            onClick={() => handleDownloadDocument(doc.id)}
-                            className="p-2 text-gray-400 hover:text-[#B8860B] hover:bg-gray-50 rounded-full transition-all"
-                            title="Download Document"
-                          >
-                            <Download size={18} />
-                          </button>
                         </div>
                         <h4 className="text-[11px] font-bold text-[#0A192F] truncate mb-1" title={doc.fileName}>
                           {doc.fileName}
                         </h4>
-                        <div className="flex items-center justify-between text-[9px] text-gray-500 font-bold uppercase tracking-wider">
+                        <div className="flex items-center justify-between text-[9px] text-gray-500 font-bold uppercase tracking-wider mb-4">
                           <span>{doc.fileType.split('/')[1] || 'FILE'}</span>
                           <span>{new Date(doc.createdAt).toLocaleDateString()}</span>
                         </div>
+                        <button 
+                          onClick={() => handleDownloadDocument(doc.id)}
+                          className="w-full flex items-center justify-center gap-2 py-2 bg-gray-50 hover:bg-[#B8860B] hover:text-white border border-gray-100 rounded text-[9px] font-bold uppercase tracking-widest transition-all"
+                        >
+                          <FileDown size={12} />
+                          Download PDF
+                        </button>
                       </div>
                     ))}
                   </div>

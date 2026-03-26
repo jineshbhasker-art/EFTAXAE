@@ -1,17 +1,4 @@
-import { 
-  collection, 
-  query, 
-  where, 
-  getDocs, 
-  addDoc, 
-  updateDoc, 
-  doc, 
-  deleteDoc, 
-  orderBy,
-  getDoc,
-  setDoc
-} from 'firebase/firestore';
-import { db, auth } from '../firebase';
+import { auth } from '../firebase';
 import { 
   VATReturn, 
   Payment, 
@@ -22,346 +9,262 @@ import {
   UserProfile
 } from '../types';
 
-enum OperationType {
-  CREATE = 'create',
-  UPDATE = 'update',
-  DELETE = 'delete',
-  LIST = 'list',
-  GET = 'get',
-  WRITE = 'write',
-}
-
-interface FirestoreErrorInfo {
-  error: string;
-  operationType: OperationType;
-  path: string | null;
-  authInfo: {
-    userId: string | undefined;
-    email: string | null | undefined;
-    emailVerified: boolean | undefined;
-    isAnonymous: boolean | undefined;
-    tenantId: string | null | undefined;
-    providerInfo: {
-      providerId: string;
-      displayName: string | null;
-      email: string | null;
-      photoUrl: string | null;
-    }[];
-  }
-}
-
-function handleFirestoreError(error: unknown, operationType: OperationType, path: string | null) {
-  const errInfo: FirestoreErrorInfo = {
-    error: error instanceof Error ? error.message : String(error),
-    authInfo: {
-      userId: auth.currentUser?.uid,
-      email: auth.currentUser?.email,
-      emailVerified: auth.currentUser?.emailVerified,
-      isAnonymous: auth.currentUser?.isAnonymous,
-      tenantId: auth.currentUser?.tenantId,
-      providerInfo: auth.currentUser?.providerData.map(provider => ({
-        providerId: provider.providerId,
-        displayName: provider.displayName,
-        email: provider.email,
-        photoUrl: provider.photoURL
-      })) || []
-    },
-    operationType,
-    path
-  }
-  console.error('Firestore Error: ', JSON.stringify(errInfo));
-  throw new Error(JSON.stringify(errInfo));
-}
+const API_BASE = '/api';
 
 export const dataService = {
   // VAT Returns
   async getVATReturns(userId?: string): Promise<VATReturn[]> {
-    const path = 'vat_returns';
     try {
-      let q = query(collection(db, path), orderBy('period', 'desc'));
-      if (userId) {
-        q = query(collection(db, path), where('userId', '==', userId), orderBy('period', 'desc'));
-      }
-      const snapshot = await getDocs(q);
-      return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as VATReturn));
+      const url = userId ? `${API_BASE}/vat-returns?userId=${userId}` : `${API_BASE}/vat-returns`;
+      const response = await fetch(url);
+      const data = await response.json();
+      return data.map((item: any) => this.mapFromDb(item));
     } catch (error) {
-      handleFirestoreError(error, OperationType.LIST, path);
+      console.error('Error fetching VAT returns:', error);
       return [];
     }
   },
 
   async getVATReturn(id: string): Promise<VATReturn | null> {
-    const path = `vat_returns/${id}`;
     try {
-      const docSnap = await getDoc(doc(db, 'vat_returns', id));
-      if (docSnap.exists()) {
-        return { id: docSnap.id, ...docSnap.data() } as VATReturn;
-      }
-      return null;
+      const response = await fetch(`${API_BASE}/vat-returns/${id}`);
+      const data = await response.json();
+      return data ? this.mapFromDb(data) : null;
     } catch (error) {
-      handleFirestoreError(error, OperationType.GET, path);
+      console.error('Error fetching VAT return:', error);
       return null;
     }
   },
 
   async saveVATReturn(data: any) {
-    const path = 'vat_returns';
     try {
-      if (data.id) {
-        const docRef = doc(db, path, data.id);
-        await updateDoc(docRef, { ...data, updatedAt: new Date().toISOString() });
-        return data.id;
-      } else {
-        const docRef = await addDoc(collection(db, path), {
+      const response = await fetch(`${API_BASE}/vat-returns`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
           ...data,
-          userId: auth.currentUser?.uid,
-          createdAt: new Date().toISOString()
-        });
-        return docRef.id;
-      }
+          userId: auth.currentUser?.uid
+        })
+      });
+      const result = await response.json();
+      return result.id;
     } catch (error) {
-      handleFirestoreError(error, data.id ? OperationType.UPDATE : OperationType.CREATE, path);
+      console.error('Error saving VAT return:', error);
       throw error;
     }
   },
 
   async deleteVATReturn(id: string) {
-    const path = `vat_returns/${id}`;
     try {
-      await deleteDoc(doc(db, 'vat_returns', id));
+      await fetch(`${API_BASE}/vat-returns/${id}`, { method: 'DELETE' });
     } catch (error) {
-      handleFirestoreError(error, OperationType.DELETE, path);
+      console.error('Error deleting VAT return:', error);
       throw error;
     }
   },
 
   // Payments
   async getPayments(userId?: string): Promise<Payment[]> {
-    const path = 'payments';
     try {
-      let q = query(collection(db, path), orderBy('dueDate', 'desc'));
-      if (userId) {
-        q = query(collection(db, path), where('userId', '==', userId), orderBy('dueDate', 'desc'));
-      }
-      const snapshot = await getDocs(q);
-      return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Payment));
+      const url = userId ? `${API_BASE}/payments?userId=${userId}` : `${API_BASE}/payments`;
+      const response = await fetch(url);
+      const data = await response.json();
+      return data.map((item: any) => this.mapFromDb(item));
     } catch (error) {
-      handleFirestoreError(error, OperationType.LIST, path);
+      console.error('Error fetching payments:', error);
       return [];
     }
   },
 
   async savePayment(data: { type: string, amount: number, status: string, dueDate: string }) {
-    const path = 'payments';
     try {
-      const docRef = await addDoc(collection(db, path), {
-        ...data,
-        userId: auth.currentUser?.uid,
-        createdAt: new Date().toISOString()
+      const response = await fetch(`${API_BASE}/payments`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          ...data,
+          userId: auth.currentUser?.uid
+        })
       });
-      const newDoc = await getDoc(docRef);
-      return { id: newDoc.id, ...newDoc.data() } as Payment;
+      return await response.json();
     } catch (error) {
-      handleFirestoreError(error, OperationType.CREATE, path);
+      console.error('Error saving payment:', error);
       throw error;
     }
   },
 
-  async updatePaymentStatus(id: string, status: string) {
-    const path = `payments/${id}`;
+  // Registrations
+  async getRegistrations(userId?: string): Promise<Registration[]> {
     try {
-      const docRef = doc(db, 'payments', id);
-      await updateDoc(docRef, { status });
-      const updatedDoc = await getDoc(docRef);
-      return { id: updatedDoc.id, ...updatedDoc.data() } as Payment;
+      const url = userId ? `${API_BASE}/registrations?userId=${userId}` : `${API_BASE}/registrations`;
+      const response = await fetch(url);
+      const data = await response.json();
+      return data.map((item: any) => this.mapFromDb(item));
     } catch (error) {
-      handleFirestoreError(error, OperationType.UPDATE, path);
+      console.error('Error fetching registrations:', error);
+      return [];
+    }
+  },
+
+  // Correspondence
+  async getCorrespondence(userId?: string): Promise<Correspondence[]> {
+    try {
+      const url = userId ? `${API_BASE}/correspondence?userId=${userId}` : `${API_BASE}/correspondence`;
+      const response = await fetch(url);
+      const data = await response.json();
+      return data.map((item: any) => this.mapFromDb(item));
+    } catch (error) {
+      console.error('Error fetching correspondence:', error);
+      return [];
+    }
+  },
+
+  // Documents
+  async getDocumentsByVATReturn(vatReturnId: string): Promise<Document[]> {
+    try {
+      const response = await fetch(`${API_BASE}/documents?vatReturnId=${vatReturnId}`);
+      const data = await response.json();
+      return data.map((item: any) => this.mapFromDb(item));
+    } catch (error) {
+      console.error('Error fetching documents:', error);
+      return [];
+    }
+  },
+
+  async downloadDocument(id: string) {
+    try {
+      const response = await fetch(`${API_BASE}/documents/${id}`);
+      const docData = await response.json();
+      if (!docData) throw new Error('Document not found');
+      
+      const link = document.createElement('a');
+      link.href = docData.file_data || '';
+      link.download = docData.file_name;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    } catch (error) {
+      console.error('Error downloading document:', error);
       throw error;
     }
   },
 
   // Corporate Tax
   async getCorporateTaxReturns(userId?: string): Promise<CorporateTaxReturn[]> {
-    const path = 'corporate_tax_returns';
     try {
-      let q = query(collection(db, path), orderBy('accountingPeriod', 'desc'));
-      if (userId) {
-        q = query(collection(db, path), where('userId', '==', userId), orderBy('accountingPeriod', 'desc'));
-      }
-      const snapshot = await getDocs(q);
-      return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as CorporateTaxReturn));
+      const url = userId ? `${API_BASE}/corporate-tax-returns?userId=${userId}` : `${API_BASE}/corporate-tax-returns`;
+      const response = await fetch(url);
+      const data = await response.json();
+      return data.map((item: any) => this.mapFromDb(item));
     } catch (error) {
-      handleFirestoreError(error, OperationType.LIST, path);
+      console.error('Error fetching corporate tax returns:', error);
       return [];
     }
   },
 
   async saveCorporateTaxReturn(data: any) {
-    const path = 'corporate_tax_returns';
     try {
-      const docRef = await addDoc(collection(db, path), {
-        ...data,
-        userId: auth.currentUser?.uid,
-        createdAt: new Date().toISOString()
+      const response = await fetch(`${API_BASE}/corporate-tax-returns`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          ...data,
+          userId: auth.currentUser?.uid
+        })
       });
-      return docRef.id;
+      const result = await response.json();
+      return result.id;
     } catch (error) {
-      handleFirestoreError(error, OperationType.CREATE, path);
+      console.error('Error saving corporate tax return:', error);
       throw error;
     }
   },
 
   async deleteCorporateTaxReturn(id: string) {
-    const path = `corporate_tax_returns/${id}`;
     try {
-      await deleteDoc(doc(db, 'corporate_tax_returns', id));
+      await fetch(`${API_BASE}/corporate-tax-returns/${id}`, { method: 'DELETE' });
     } catch (error) {
-      handleFirestoreError(error, OperationType.DELETE, path);
+      console.error('Error deleting corporate tax return:', error);
       throw error;
     }
   },
 
-  async getVATRefunds(): Promise<any[]> {
-    return [];
-  },
-
-  async getCorrespondence(userId?: string): Promise<Correspondence[]> {
-    const path = 'correspondence';
+  async getVATRefunds(userId?: string): Promise<any[]> {
     try {
-      let q = query(collection(db, path), orderBy('createdAt', 'desc'));
-      if (userId) {
-        q = query(collection(db, path), where('userId', '==', userId), orderBy('createdAt', 'desc'));
-      }
-      const snapshot = await getDocs(q);
-      return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Correspondence));
+      const url = userId ? `${API_BASE}/vat-refunds?userId=${userId}` : `${API_BASE}/vat-refunds`;
+      const response = await fetch(url);
+      const data = await response.json();
+      return data.map((item: any) => this.mapFromDb(item));
     } catch (error) {
-      handleFirestoreError(error, OperationType.LIST, path);
+      console.error('Error fetching VAT refunds:', error);
       return [];
     }
   },
 
-  async getRegistrations(userId?: string): Promise<Registration[]> {
-    const path = 'registrations';
+  async saveVATRefund(data: any) {
     try {
-      let q = query(collection(db, path));
-      if (userId) {
-        q = query(collection(db, path), where('userId', '==', userId));
-      }
-      const snapshot = await getDocs(q);
-      return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Registration));
+      const response = await fetch(`${API_BASE}/vat-refunds`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          ...data,
+          userId: auth.currentUser?.uid
+        })
+      });
+      const result = await response.json();
+      return result.id;
     } catch (error) {
-      handleFirestoreError(error, OperationType.LIST, path);
-      return [];
+      console.error('Error saving VAT refund:', error);
+      throw error;
     }
   },
 
   async getDocuments(userId?: string): Promise<Document[]> {
-    const path = 'documents';
     try {
-      let q = query(collection(db, path), orderBy('createdAt', 'desc'));
-      if (userId) {
-        q = query(collection(db, path), where('userId', '==', userId), orderBy('createdAt', 'desc'));
-      }
-      const snapshot = await getDocs(q);
-      return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Document));
+      const url = userId ? `${API_BASE}/documents?userId=${userId}` : `${API_BASE}/documents`;
+      const response = await fetch(url);
+      const data = await response.json();
+      return data.map((item: any) => this.mapFromDb(item));
     } catch (error) {
-      handleFirestoreError(error, OperationType.LIST, path);
-      return [];
-    }
-  },
-
-  async getDocumentsByVATReturn(vatReturnId: string): Promise<Document[]> {
-    const path = 'documents';
-    try {
-      const q = query(collection(db, path), where('vatReturnId', '==', vatReturnId));
-      const snapshot = await getDocs(q);
-      return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Document));
-    } catch (error) {
-      handleFirestoreError(error, OperationType.LIST, path);
+      console.error('Error fetching documents:', error);
       return [];
     }
   },
 
   async uploadDocument(data: { vatReturnId: string, fileName: string, fileType: string, fileData: string }) {
-    const path = 'documents';
     try {
-      const docRef = await addDoc(collection(db, path), {
-        ...data,
-        userId: auth.currentUser?.uid,
-        createdAt: new Date().toISOString()
+      const response = await fetch(`${API_BASE}/documents`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          ...data,
+          userId: auth.currentUser?.uid
+        })
       });
-      const newDoc = await getDoc(docRef);
-      return { id: newDoc.id, ...newDoc.data() } as Document;
+      return await response.json();
     } catch (error) {
-      handleFirestoreError(error, OperationType.CREATE, path);
-      throw error;
-    }
-  },
-
-  async downloadDocument(id: string) {
-    const path = `documents/${id}`;
-    try {
-      const docSnap = await getDoc(doc(db, 'documents', id));
-      if (!docSnap.exists()) throw new Error('Document not found');
-      const docData = docSnap.data() as Document;
-      
-      const link = document.createElement('a');
-      link.href = docData.fileData || '';
-      link.download = docData.fileName;
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-    } catch (error) {
-      handleFirestoreError(error, OperationType.GET, path);
+      console.error('Error uploading document:', error);
       throw error;
     }
   },
 
   async sendReceipt(data: { amount: number, reference: string, email: string }) {
-    // This would typically be a cloud function or a backend call.
-    // For now, we'll just simulate success.
     console.log('Sending receipt:', data);
     return { success: true };
   },
 
-  async getAllUsers(): Promise<UserProfile[]> {
-    const path = 'users';
-    try {
-      const snapshot = await getDocs(collection(db, path));
-      return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as UserProfile));
-    } catch (error) {
-      handleFirestoreError(error, OperationType.LIST, path);
-      return [];
+  // Helper to map snake_case from DB to camelCase for frontend
+  mapFromDb(item: any) {
+    const mapped: any = {};
+    for (const key in item) {
+      const camelKey = key.replace(/_([a-z])/g, (g) => g[1].toUpperCase());
+      mapped[camelKey] = item[key];
     }
+    return mapped;
   },
 
   async seedData(): Promise<void> {
-    const vatReturns = [
-      { userId: auth.currentUser?.uid, status: 'Filed', period: '2023-Q4', vatRef: 'VAT-2023-001', periodFrom: '2023-10-01', periodTo: '2023-12-31', totalSales: 1250000, totalVAT: 62500, totalExpenses: 850000, totalRecoverableVAT: 42500, netVAT: 20000, dueDate: '2024-01-28', filedAt: '2024-01-15', createdAt: new Date().toISOString() },
-      { userId: auth.currentUser?.uid, status: 'Filed', period: '2023-Q3', vatRef: 'VAT-2023-002', periodFrom: '2023-07-01', periodTo: '2023-09-30', totalSales: 1100000, totalVAT: 55000, totalExpenses: 750000, totalRecoverableVAT: 37500, netVAT: 17500, dueDate: '2023-10-28', filedAt: '2023-10-10', createdAt: new Date().toISOString() },
-      { userId: auth.currentUser?.uid, status: 'Overdue', period: '2024-Q1', vatRef: 'VAT-2024-001', periodFrom: '2024-01-01', periodTo: '2024-03-31', totalSales: 0, totalVAT: 0, totalExpenses: 0, totalRecoverableVAT: 0, netVAT: 0, dueDate: '2024-04-28', createdAt: new Date().toISOString() }
-    ];
-
-    const payments = [
-      { userId: auth.currentUser?.uid, type: 'VAT Payment', amount: 20000, status: 'Paid', dueDate: '2024-01-28', paidAt: '2024-01-20', createdAt: new Date().toISOString() },
-      { userId: auth.currentUser?.uid, type: 'Corporate Tax', amount: 45000, status: 'Outstanding', dueDate: '2024-06-30', createdAt: new Date().toISOString() },
-      { userId: auth.currentUser?.uid, type: 'Penalty', amount: 500, status: 'Paid', dueDate: '2023-12-15', paidAt: '2023-12-14', createdAt: new Date().toISOString() }
-    ];
-
-    const correspondence = [
-      { userId: auth.currentUser?.uid, subject: 'VAT Registration Certificate', fromName: 'FTA Admin', date: '2023-01-15', type: 'Certificate', status: 'Read', content: 'Your VAT registration has been approved. Please find the certificate attached.', createdAt: new Date().toISOString() },
-      { userId: auth.currentUser?.uid, subject: 'Tax Audit Notification', fromName: 'Audit Department', date: '2024-02-10', type: 'Audit', status: 'Unread', content: 'Your entity has been selected for a routine tax audit for the period 2023.', createdAt: new Date().toISOString() },
-      { userId: auth.currentUser?.uid, subject: 'New Service Update', fromName: 'System', date: '2024-03-01', type: 'Message', status: 'Read', content: 'We have updated our corporate tax filing portal with new features.', createdAt: new Date().toISOString() }
-    ];
-
-    const registrations = [
-      { userId: auth.currentUser?.uid, taxType: 'VAT', trn: '100234567890003', status: 'Active', effectiveDate: '2023-01-01', entityName: 'Global Trading LLC' },
-      { userId: auth.currentUser?.uid, taxType: 'Corporate Tax', trn: '200567890123456', status: 'Active', effectiveDate: '2023-06-01', entityName: 'Global Trading LLC' }
-    ];
-
-    for (const v of vatReturns) await addDoc(collection(db, 'vat_returns'), v);
-    for (const p of payments) await addDoc(collection(db, 'payments'), p);
-    for (const c of correspondence) await addDoc(collection(db, 'correspondence'), c);
-    for (const r of registrations) await addDoc(collection(db, 'registrations'), r);
+    // Seeding logic can be implemented via a dedicated API route if needed
+    console.warn('Seed data not yet implemented for AWS RDS backend');
   }
 };
