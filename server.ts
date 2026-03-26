@@ -1,4 +1,14 @@
 import 'dotenv/config';
+
+// Global error handlers for diagnostics
+process.on('uncaughtException', (err) => {
+  console.error('Uncaught Exception:', err);
+  process.exit(1);
+});
+process.on('unhandledRejection', (reason, promise) => {
+  console.error('Unhandled Rejection at:', promise, 'reason:', reason);
+  process.exit(1);
+});
 import express from 'express';
 import { createServer as createViteServer } from 'vite';
 import path from 'path';
