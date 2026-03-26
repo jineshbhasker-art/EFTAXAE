@@ -1,48 +1,80 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { UserProfile } from '../types';
 import { auth, db } from '../firebase';
-import { 
-  onAuthStateChanged, 
-  signInWithEmailAndPassword, 
-  createUserWithEmailAndPassword, 
+import {
+  onAuthStateChanged,
+  signInWithEmailAndPassword,
+  createUserWithEmailAndPassword,
   signOut,
-  User as FirebaseUser,
   GoogleAuthProvider,
   signInWithPopup
 } from 'firebase/auth';
-import { doc, getDoc, setDoc } from 'firebase/firestore';
+import { doc, getDoc, setDoc, collection, getDocs, addDoc } from 'firebase/firestore';
 
-interface AuthContextType {
-  user: UserProfile | null;
-  loading: boolean;
-  login: (username: string, password: string) => Promise<void>;
-  register: (username: string, password: string, displayName: string) => Promise<void>;
-  logout: () => Promise<void>;
-  loginWithGoogle: () => Promise<void>;
+export interface Company {
+  id: string;
+  name: string;
+  email: string;
+  trn?: string;
 }
 
-const AuthContext = createContext<AuthContextType>({ 
-  user: null, 
+interface AuthContextType {
+  user: (UserProfile & { companyName?: string }) | null;
+  loading: boolean;
+  companies: Company[];
+  login: (username: string, password: string) => Promise<void>;
+  register: (username: string, password: string, displayName: string, companyId: string) => Promise<void>;
+  logout: () => Promise<void>;
+  loginWithGoogle: () => Promise<void>;
+  registerCompany: (name: string, email: string, trn?: string) => Promise<Company>;
+  fetchCompanies: () => Promise<void>;
+}
+
+const AuthContext = createContext<AuthContextType>({
+  user: null,
   loading: true,
+  companies: [],
   login: async () => {},
   register: async () => {},
   logout: async () => {},
-  loginWithGoogle: async () => {}
+  loginWithGoogle: async () => {},
+  registerCompany: async () => ({ id: '', name: '', email: '' }),
+  fetchCompanies: async () => {}
 });
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [user, setUser] = useState<UserProfile | null>(null);
+  const [user, setUser] = useState<(UserProfile & { companyName?: string }) | null>(null);
   const [loading, setLoading] = useState(true);
+  const [companies, setCompanies] = useState<Company[]>([]);
+
+  const fetchCompanies = async () => {
+    try {
+      const snapshot = await getDocs(collection(db, 'companies'));
+      const list: Company[] = snapshot.docs.map(d => ({ id: d.id, ...d.data() } as Company));
+      setCompanies(list);
+    } catch (error) {
+      console.error('Fetch companies error:', error);
+    }
+  };
 
   useEffect(() => {
+    fetchCompanies();
+
     const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
       if (firebaseUser) {
         try {
           const userDoc = await getDoc(doc(db, 'users', firebaseUser.uid));
           if (userDoc.exists()) {
-            setUser(userDoc.data() as UserProfile);
+            const userData = userDoc.data() as UserProfile & { companyId?: string };
+            let companyName: string | undefined;
+            if (userData.companyId) {
+              const companyDoc = await getDoc(doc(db, 'companies', userData.companyId));
+              if (companyDoc.exists()) {
+                companyName = (companyDoc.data() as Company).name;
+              }
+            }
+            setUser({ ...userData, companyName });
           } else {
-            // Handle case where auth exists but profile doesn't
             setUser(null);
           }
         } catch (error) {
@@ -59,28 +91,25 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   }, []);
 
   const login = async (username: string, password: string) => {
-    // Note: Firebase Auth uses email, so we assume username is email for now
-    // or we can fetch the email from a mapping if needed.
-    // For simplicity in this demo, we'll use email as username.
     const email = username.includes('@') ? username : `${username}@emara.tax`;
     await signInWithEmailAndPassword(auth, email, password);
   };
 
-  const register = async (username: string, password: string, displayName: string) => {
+  const register = async (username: string, password: string, displayName: string, companyId: string) => {
     const email = username.includes('@') ? username : `${username}@emara.tax`;
     const { user: firebaseUser } = await createUserWithEmailAndPassword(auth, email, password);
-    
-    const userProfile: UserProfile = {
+
+    const userProfile = {
       id: firebaseUser.uid,
       username,
       email,
       displayName,
-      role: 'corporate',
+      role: 'corporate' as const,
+      companyId,
       createdAt: new Date().toISOString()
     };
 
     await setDoc(doc(db, 'users', firebaseUser.uid), userProfile);
-    setUser(userProfile);
   };
 
   const logout = async () => {
@@ -95,23 +124,29 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
     const userDoc = await getDoc(doc(db, 'users', firebaseUser.uid));
     if (!userDoc.exists()) {
-      const userProfile: UserProfile = {
+      const userProfile = {
         id: firebaseUser.uid,
         username: firebaseUser.email?.split('@')[0] || 'user',
         email: firebaseUser.email || '',
         displayName: firebaseUser.displayName || 'User',
-        role: 'corporate',
+        role: 'corporate' as const,
+        companyId: '',
         createdAt: new Date().toISOString()
       };
       await setDoc(doc(db, 'users', firebaseUser.uid), userProfile);
-      setUser(userProfile);
-    } else {
-      setUser(userDoc.data() as UserProfile);
     }
   };
 
+  const registerCompany = async (name: string, email: string, trn?: string): Promise<Company> => {
+    const companyData = { name, email, trn: trn || '', createdAt: new Date().toISOString() };
+    const docRef = await addDoc(collection(db, 'companies'), companyData);
+    const company: Company = { id: docRef.id, name, email, trn };
+    setCompanies(prev => [...prev, company]);
+    return company;
+  };
+
   return (
-    <AuthContext.Provider value={{ user, loading, login, register, logout, loginWithGoogle }}>
+    <AuthContext.Provider value={{ user, loading, companies, login, register, logout, loginWithGoogle, registerCompany, fetchCompanies }}>
       {children}
     </AuthContext.Provider>
   );
